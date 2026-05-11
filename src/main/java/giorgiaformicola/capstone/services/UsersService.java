@@ -71,6 +71,12 @@ public class UsersService {
         return this.usersRepository.findAll(specification, pageable);
     }
 
+    //TODO: handle deleting related records in the DB
+    public void findByIdAndDelete(UUID userId) {
+        User found = this.findById(userId);
+        this.usersRepository.delete(found);
+    }
+
     ;
 
 }

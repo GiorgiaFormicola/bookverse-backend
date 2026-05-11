@@ -5,6 +5,7 @@ import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,13 @@ public class UsersController {
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return this.usersService.findById(currentAuthenticatedUser.getId());
+    }
+
+    @DeleteMapping("/me")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        this.usersService.findByIdAndDelete(currentAuthenticatedUser.getId());
     }
 
 
@@ -53,6 +61,5 @@ public class UsersController {
         );
         return this.usersService.findAll(specification, page, size, sortBy, order);
     }
-
 
 }
