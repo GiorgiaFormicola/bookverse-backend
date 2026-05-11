@@ -51,6 +51,17 @@ public class UsersController {
         return this.usersService.findByIdAndUpdateProfilePicture(currentAuthenticatedUser.getId(), file);
     }
 
+    //TODO: verify email
+    @PatchMapping("/me/email")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public User updateMyEmail(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated EmailDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return this.usersService.findByIdAndUpdateEmail(currentAuthenticatedUser.getId(), body);
+    }
+
 
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")

@@ -7,6 +7,7 @@ import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
+import giorgiaformicola.capstone.payloads.EmailDTO;
 import giorgiaformicola.capstone.payloads.LoginDTO;
 import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.payloads.RegistrationDTO;
@@ -45,9 +46,9 @@ public class UsersService {
     public User save(RegistrationDTO body) {
         if (usersRepository.existsByUsername(body.username()))
             throw new BadRequestException("Username " + body.username() + " already in use!");
-        if (usersRepository.existsByEmail(body.email()))
-            throw new BadRequestException("Email " + body.email() + " already in use!");
-        User newUser = new User(body.username(), body.email(), this.bCryptEncoder.encode(body.password()), body.displayName(), body.birthdate());
+        if (usersRepository.existsByEmail(body.email().toLowerCase()))
+            throw new BadRequestException("Email " + body.email().toLowerCase() + " already in use!");
+        User newUser = new User(body.username(), body.email().toLowerCase(), this.bCryptEncoder.encode(body.password()), body.displayName(), body.birthdate());
         User savedUser = this.usersRepository.save(newUser);
         log.info("New user with id" + savedUser.getId() + "successfully registered!");
         return savedUser;
@@ -59,7 +60,7 @@ public class UsersService {
 
 
     public String checkUserCredentialsAndGenerateToken(LoginDTO body) {
-        User found = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new UnauthorizedException("Wrong credentials supplied"));
+        User found = this.usersRepository.findByEmail(body.email().toLowerCase()).orElseThrow(() -> new UnauthorizedException("Wrong credentials supplied"));
         if (!bCryptEncoder.matches(body.password(), found.getPassword()))
             throw new UnauthorizedException("Wrong credentials supplied");
         return this.tokenTools.generateToken(found);
@@ -105,6 +106,18 @@ public class UsersService {
             return this.usersRepository.save(found);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    public User findByIdAndUpdateEmail(UUID userId, EmailDTO body) {
+        User found = this.findById(userId);
+        if (!found.getEmail().equals(body.email().toLowerCase())) {
+            if (this.usersRepository.existsByEmail(body.email().toLowerCase()))
+                throw new BadRequestException("Email " + body.email().toLowerCase() + " already in use!");
+            found.setEmail(body.email().toLowerCase());
+            return this.usersRepository.save(found);
+        } else {
+            return found;
         }
     }
 

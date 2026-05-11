@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 public record ProfileUpdateDTO(
         @NotBlank(message = "Username is mandatory and it can't contain only blank spaces")
         @Size(min = 2, max = 30, message = "Username must contain minimum 2 characters and maximum 30 characters")
-        @Pattern(regexp = "^(?!.*\\.\\.)(?!.*\\.$)[^\\W][\\w.]{1,29}$", message = "Username must follow a valid username format")
+        @Pattern(regexp = "^(?!.*\\.\\.)(?!.*\\.$)[a-z0-9_][a-z0-9_.]{1,29}$", message = "Username must follow a valid username format")
         String username,
 
         @NotBlank(message = "Display name is mandatory")
