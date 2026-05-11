@@ -20,6 +20,14 @@ public class UsersService {
         this.usersRepository = usersRepository;
     }
 
+    public User save(RegistrationDTO body) {
+        if (usersRepository.existsByUsername(body.username()))
+            throw new BadRequestException("Username " + body.username() + "already in use!");
+        if (usersRepository.existsByEmail(body.email()))
+            throw new BadRequestException("Email " + body.email() + "already in use!");
+        User newUser = new User(body.username(), body.email(), body.password(), body.displayName(), body.birthdate());
+        return this.usersRepository.save(newUser);
+    }
 
     public User findById(UUID userId) {
         return this.usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("user", userId));

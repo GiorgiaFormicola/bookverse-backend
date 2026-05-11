@@ -21,4 +21,13 @@ public class AuthController {
         this.usersService = usersService;
     }
 
+    @PostMapping("register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public User register(@RequestBody @Validated RegistrationDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return this.usersService.save(body);
+    }
 }
