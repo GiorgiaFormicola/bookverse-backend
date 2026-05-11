@@ -5,6 +5,7 @@ import giorgiaformicola.capstone.exceptions.PayloadValidationException;
 import giorgiaformicola.capstone.payloads.EmailUpdateDTO;
 import giorgiaformicola.capstone.payloads.PasswordUpdateDTO;
 import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
+import giorgiaformicola.capstone.payloads.RoleDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
 import org.springframework.data.domain.Page;
@@ -73,7 +74,6 @@ public class UsersController {
         return this.usersService.findByIdAndUpdatePassword(currentAuthenticatedUser.getId(), body);
     }
 
-
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -106,6 +106,16 @@ public class UsersController {
                 active
         );
         return this.usersService.findAll(specification, page, size, sortBy, order);
+    }
+
+    @PatchMapping("/{userId}/role")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public User updateUserRole(@PathVariable UUID userId, @RequestBody @Validated RoleDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return this.usersService.findByIdAndUpdateRole(userId, body);
     }
 
 }

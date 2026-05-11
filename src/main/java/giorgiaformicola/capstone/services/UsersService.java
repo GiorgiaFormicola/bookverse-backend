@@ -3,6 +3,7 @@ package giorgiaformicola.capstone.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import giorgiaformicola.capstone.entities.User;
+import giorgiaformicola.capstone.enums.RoleType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
@@ -126,14 +127,19 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-    ;
+    public User findByIdAndUpdateRole(UUID userId, RoleDTO body) {
+        User found = this.findById(userId);
+        if (found.getRole().name().equals(body.role()))
+            throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
+        found.setRole(RoleType.valueOf(body.role()));
+        return this.usersRepository.save(found);
+    }
 
     //TODO: handle deleting related records in the DB
     public void findByIdAndDelete(UUID userId) {
         User found = this.findById(userId);
         this.usersRepository.delete(found);
     }
-
-    ;
+    
 
 }
