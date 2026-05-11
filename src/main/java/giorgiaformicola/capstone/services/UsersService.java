@@ -127,11 +127,19 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-    public User findByIdAndUpdateRole(UUID userId, RoleDTO body) {
+    public User findByIdAndUpdateRole(UUID userId, UserRoleDTO body) {
         User found = this.findById(userId);
         if (found.getRole().name().equals(body.role()))
             throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
         found.setRole(RoleType.valueOf(body.role()));
+        return this.usersRepository.save(found);
+    }
+
+    public User findByIdAndUpdateStatus(UUID userId, UserStatusDTO body) {
+        User found = this.findById(userId);
+        if (body.isActive().equals(found.isActive()))
+            throw new BadRequestException("The status of the user with id " + userId + " is already set to " + (found.isActive() ? "'active'" : "'inactive'"));
+        found.setActive(body.isActive());
         return this.usersRepository.save(found);
     }
 
@@ -140,6 +148,6 @@ public class UsersService {
         User found = this.findById(userId);
         this.usersRepository.delete(found);
     }
-    
+
 
 }
