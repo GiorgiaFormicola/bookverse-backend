@@ -3,9 +3,11 @@ package giorgiaformicola.capstone.exceptions;
 import giorgiaformicola.capstone.payloads.ErrorDTO;
 import giorgiaformicola.capstone.payloads.ErrorsListDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +35,19 @@ public class ErrorsHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorDTO handleNotFoundException(NotFoundException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorDTO handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        return new ErrorDTO("Access denied, you don't have the required permission", LocalDateTime.now());
+    }
+
+    /*FOR INVALID UUID IN THE PATH VARIABLE*/
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        return new ErrorDTO("Oops, something went wrong with you request", LocalDateTime.now());
     }
 
     //TODO: handle missing errors

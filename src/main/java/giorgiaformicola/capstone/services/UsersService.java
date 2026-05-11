@@ -9,6 +9,11 @@ import giorgiaformicola.capstone.payloads.RegistrationDTO;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +55,22 @@ public class UsersService {
             throw new UnauthorizedException("Wrong credentials supplied");
         return this.tokenTools.generateToken(found);
     }
+
+    public Page<User> findAll(Specification<User> specification, int page, int size, String sortBy, String order) {
+        if (page < 0) page = 0;
+        if (size < 0 || size > 100) size = 10;
+
+        if (!sortBy.equals("username") && !sortBy.equals("email") && !sortBy.equals("id")) sortBy = "username";
+
+        Pageable pageable = switch (order) {
+            case "asc" -> PageRequest.of(page, size, Sort.by(sortBy));
+            case "desc" -> PageRequest.of(page, size, Sort.by(sortBy).reverse());
+            default -> PageRequest.of(page, size, Sort.by(sortBy));
+        };
+
+        return this.usersRepository.findAll(specification, pageable);
+    }
+
+    ;
 
 }
