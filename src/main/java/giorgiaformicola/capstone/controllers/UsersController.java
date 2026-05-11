@@ -2,6 +2,7 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
+import giorgiaformicola.capstone.payloads.EmailDTO;
 import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +44,13 @@ public class UsersController {
         }
         return this.usersService.findByIdAndUpdateProfile(currentAuthenticatedUser.getId(), body);
     }
-    
+
+    @PatchMapping("/me/picture")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public User updateMyProfilePicture(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestParam("profile_picture") MultipartFile file) {
+        return this.usersService.findByIdAndUpdateProfilePicture(currentAuthenticatedUser.getId(), file);
+    }
+
 
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")

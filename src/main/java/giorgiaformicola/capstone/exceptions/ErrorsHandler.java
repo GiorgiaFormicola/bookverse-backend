@@ -50,5 +50,13 @@ public class ErrorsHandler {
         return new ErrorDTO("Oops, something went wrong with you request", LocalDateTime.now());
     }
 
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleValidationException(ValidationException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
+
     //TODO: handle missing errors
 }

@@ -1,9 +1,12 @@
 package giorgiaformicola.capstone.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
+import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.LoginDTO;
 import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.payloads.RegistrationDTO;
@@ -17,7 +20,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -27,11 +33,13 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder bCryptEncoder;
     private final TokenTools tokenTools;
+    private final Cloudinary cloudinary;
 
-    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools) {
+    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary) {
         this.usersRepository = usersRepository;
         this.bCryptEncoder = bCryptEncoder;
         this.tokenTools = tokenTools;
+        this.cloudinary = cloudinary;
     }
 
     public User save(RegistrationDTO body) {
@@ -83,6 +91,21 @@ public class UsersService {
         found.setDisplayName(body.displayName());
         found.setBio(body.bio());
         return this.usersRepository.save(found);
+    }
+
+    public User findByIdAndUpdateProfilePicture(UUID userId, MultipartFile file) {
+        if (file.getContentType() == null || !file.getContentType().startsWith("image/") || file.isEmpty())
+            throw new ValidationException("Invalid type of file provided");
+        if (file.getSize() > 2 * 1024 * 1024)
+            throw new ValidationException("File size must be smaller than 2 MB");
+        User found = this.findById(userId);
+        try {
+            Map result = this.cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            found.setProfilePictureURL((String) result.get("secure_url"));
+            return this.usersRepository.save(found);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     //TODO: handle deleting related records in the DB

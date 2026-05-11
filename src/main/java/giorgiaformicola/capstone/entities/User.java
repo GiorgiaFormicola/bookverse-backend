@@ -44,8 +44,8 @@ public class User implements UserDetails {
     @JsonIgnore
     private LocalDate birthdate;
 
-    @Column(name = "profile_image_url", columnDefinition = "text", nullable = false)
-    private String profileImageURL;
+    @Column(name = "profile_picture_url", columnDefinition = "text", nullable = false)
+    private String profilePictureURL;
 
     @Column(nullable = false, length = 500)
     private String bio;
@@ -66,7 +66,7 @@ public class User implements UserDetails {
         this.password = password;
         this.displayName = displayName;
         this.birthdate = birthdate;
-        this.profileImageURL = "https://picsum.photos/id/24/300/300";
+        this.profilePictureURL = "https://picsum.photos/id/24/300/300";
         this.bio = "";
         this.role = RoleType.USER;
         this.active = true;
