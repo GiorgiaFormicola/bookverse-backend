@@ -7,10 +7,7 @@ import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
-import giorgiaformicola.capstone.payloads.EmailDTO;
-import giorgiaformicola.capstone.payloads.LoginDTO;
-import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
-import giorgiaformicola.capstone.payloads.RegistrationDTO;
+import giorgiaformicola.capstone.payloads.*;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
 import lombok.extern.slf4j.Slf4j;
@@ -109,17 +106,27 @@ public class UsersService {
         }
     }
 
-    public User findByIdAndUpdateEmail(UUID userId, EmailDTO body) {
+    public User findByIdAndUpdateEmail(UUID userId, EmailUpdateDTO body) {
         User found = this.findById(userId);
         if (!found.getEmail().equals(body.email().toLowerCase())) {
             if (this.usersRepository.existsByEmail(body.email().toLowerCase()))
                 throw new BadRequestException("Email " + body.email().toLowerCase() + " already in use!");
             found.setEmail(body.email().toLowerCase());
-            return this.usersRepository.save(found);
-        } else {
-            return found;
         }
+        return this.usersRepository.save(found);
     }
+
+    public User findByIdAndUpdatePassword(UUID userId, PasswordUpdateDTO body) {
+        User found = this.findById(userId);
+        if (!bCryptEncoder.matches(body.currentPassword(), found.getPassword()))
+            throw new UnauthorizedException("Wrong password supplied");
+        if (bCryptEncoder.matches(body.newPassword(), found.getPassword()))
+            throw new BadRequestException("New password must be different from the current one");
+        found.setPassword(this.bCryptEncoder.encode(body.newPassword()));
+        return this.usersRepository.save(found);
+    }
+
+    ;
 
     //TODO: handle deleting related records in the DB
     public void findByIdAndDelete(UUID userId) {

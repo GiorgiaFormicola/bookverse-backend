@@ -2,7 +2,8 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.EmailDTO;
+import giorgiaformicola.capstone.payloads.EmailUpdateDTO;
+import giorgiaformicola.capstone.payloads.PasswordUpdateDTO;
 import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
@@ -54,12 +55,22 @@ public class UsersController {
     //TODO: verify email
     @PatchMapping("/me/email")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public User updateMyEmail(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated EmailDTO body, BindingResult validationResult) {
+    public User updateMyEmail(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated EmailUpdateDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
             throw new PayloadValidationException(errors);
         }
         return this.usersService.findByIdAndUpdateEmail(currentAuthenticatedUser.getId(), body);
+    }
+
+    @PatchMapping("/me/password")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public User updateMyPassword(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated PasswordUpdateDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return this.usersService.findByIdAndUpdatePassword(currentAuthenticatedUser.getId(), body);
     }
 
 
