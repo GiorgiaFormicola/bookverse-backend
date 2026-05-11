@@ -5,6 +5,7 @@ import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.payloads.LoginDTO;
+import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.payloads.RegistrationDTO;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
@@ -35,9 +36,9 @@ public class UsersService {
 
     public User save(RegistrationDTO body) {
         if (usersRepository.existsByUsername(body.username()))
-            throw new BadRequestException("Username " + body.username() + "already in use!");
+            throw new BadRequestException("Username " + body.username() + " already in use!");
         if (usersRepository.existsByEmail(body.email()))
-            throw new BadRequestException("Email " + body.email() + "already in use!");
+            throw new BadRequestException("Email " + body.email() + " already in use!");
         User newUser = new User(body.username(), body.email(), this.bCryptEncoder.encode(body.password()), body.displayName(), body.birthdate());
         User savedUser = this.usersRepository.save(newUser);
         log.info("New user with id" + savedUser.getId() + "successfully registered!");
@@ -69,6 +70,19 @@ public class UsersService {
         };
 
         return this.usersRepository.findAll(specification, pageable);
+    }
+
+    //TODO: check if active
+    public User findByIdAndUpdateProfile(UUID userId, ProfileUpdateDTO body) {
+        User found = this.findById(userId);
+        if (!found.getUsername().equals(body.username())) {
+            if (this.usersRepository.existsByUsername(body.username()))
+                throw new BadRequestException("Username " + body.username() + " already in use!");
+        }
+        found.setUsername(body.username());
+        found.setDisplayName(body.displayName());
+        found.setBio(body.bio());
+        return this.usersRepository.save(found);
     }
 
     //TODO: handle deleting related records in the DB

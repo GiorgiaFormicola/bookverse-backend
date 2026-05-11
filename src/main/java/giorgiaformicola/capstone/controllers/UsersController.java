@@ -1,6 +1,8 @@
 package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
+import giorgiaformicola.capstone.exceptions.PayloadValidationException;
+import giorgiaformicola.capstone.payloads.ProfileUpdateDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
 import org.springframework.data.domain.Page;
@@ -8,8 +10,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,6 +32,17 @@ public class UsersController {
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return this.usersService.findById(currentAuthenticatedUser.getId());
     }
+
+    @PutMapping("/me")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public User updateMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated ProfileUpdateDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return this.usersService.findByIdAndUpdateProfile(currentAuthenticatedUser.getId(), body);
+    }
+    
 
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
