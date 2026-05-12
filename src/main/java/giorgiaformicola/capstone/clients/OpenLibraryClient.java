@@ -1,6 +1,7 @@
 package giorgiaformicola.capstone.clients;
 
-import giorgiaformicola.capstone.payloads.BooksSearchResponseDTO;
+import giorgiaformicola.capstone.payloads.BookDetailsDTO;
+import giorgiaformicola.capstone.payloads.WorksSearchResponseDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -12,7 +13,7 @@ public class OpenLibraryClient {
         this.restClient = factory.create("https://openlibrary.org");
     }
 
-    public BooksSearchResponseDTO search(String query, int page) {
+    public WorksSearchResponseDTO searchWorks(String query, int page) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search.json")
@@ -21,6 +22,15 @@ public class OpenLibraryClient {
                         .queryParam("offset", page * 20)
                         .build())
                 .retrieve()
-                .body(BooksSearchResponseDTO.class);
+                .body(WorksSearchResponseDTO.class);
+    }
+
+    public BookDetailsDTO searchBook(String editionId) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/books/" + editionId + ".json")
+                        .build())
+                .retrieve()
+                .body(BookDetailsDTO.class);
     }
 }

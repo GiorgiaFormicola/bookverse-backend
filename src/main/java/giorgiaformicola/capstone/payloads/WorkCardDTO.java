@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record BookCardDTO(
+public record WorkCardDTO(
         @JsonProperty("key")
         String workKey,
 
@@ -17,7 +17,7 @@ public record BookCardDTO(
 
         @JsonProperty("cover_edition_key")
         String editionKey,
-        
+
         @JsonProperty("cover_i")
         String coverURL
 ) {

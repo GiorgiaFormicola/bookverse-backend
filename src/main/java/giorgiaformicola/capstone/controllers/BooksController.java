@@ -1,12 +1,10 @@
 package giorgiaformicola.capstone.controllers;
 
-import giorgiaformicola.capstone.payloads.BooksSearchResponseDTO;
+import giorgiaformicola.capstone.payloads.BookDetailsDTO;
+import giorgiaformicola.capstone.payloads.WorksSearchResponseDTO;
 import giorgiaformicola.capstone.services.BooksService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/books")
@@ -19,8 +17,14 @@ public class BooksController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public BooksSearchResponseDTO search(@RequestParam String query,
-                                         @RequestParam(defaultValue = "0") int page) {
-        return booksService.search(query, page);
+    public WorksSearchResponseDTO searchFromAPI(@RequestParam String query,
+                                                @RequestParam(defaultValue = "0") int page) {
+        return booksService.searchWorksFromAPI(query, page);
+    }
+
+    @GetMapping("/search/{editionId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public BookDetailsDTO getBookDetailsFromAPI(@PathVariable String editionId) {
+        return booksService.getBookFromAPI(editionId);
     }
 }
