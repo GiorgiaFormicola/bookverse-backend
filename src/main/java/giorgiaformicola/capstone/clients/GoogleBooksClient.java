@@ -1,10 +1,10 @@
 package giorgiaformicola.capstone.clients;
 
 import giorgiaformicola.capstone.exceptions.GoogleBooksException;
+import giorgiaformicola.capstone.payloads.GoogleBooksSearchResultDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import tools.jackson.databind.JsonNode;
 
 @Component
 public class GoogleBooksClient {
@@ -17,7 +17,7 @@ public class GoogleBooksClient {
 
     }
 
-    public JsonNode searchBooks(String query, int page, String language) {
+    public GoogleBooksSearchResultDTO searchBooks(String query, String language) {
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
@@ -25,13 +25,13 @@ public class GoogleBooksClient {
                         .uri(uriBuilder -> uriBuilder
                                 .queryParam("q", query)
                                 .queryParam("langRestrict", language)
-                                .queryParam("maxResults", 20)
+                                .queryParam("maxResults", 40)
                                 .queryParam("printType", "books")
-                                .queryParam("startIndex", page * 20)
+                                /*.queryParam("startIndex", page * 20)*/
                                 .queryParam("key", apiKey)
                                 .build())
                         .retrieve()
-                        .body(JsonNode.class);
+                        .body(GoogleBooksSearchResultDTO.class);
             } catch (Exception e) {
                 if (attempt == maxAttempts) {
                     throw e;
