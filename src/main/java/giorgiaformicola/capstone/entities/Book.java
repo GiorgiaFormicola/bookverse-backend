@@ -12,26 +12,39 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Book {
+    @Column(name = "google_id", unique = true)
+    String googleId;
+
     @Column(columnDefinition = "text", nullable = false)
     String title;
+
     @Column(columnDefinition = "text", nullable = false)
     String authors;
-    @Column(columnDefinition = "text", nullable = false)
-    String description;
-    @Column(nullable = false)
-    String pages;
+
     @Column(nullable = false)
     String publisher;
-    @Column(name = "cover_url", columnDefinition = "text", nullable = false)
-    String coverURL;
-    @Column(name = "publish_date", nullable = false)
-    String publishDate;
+
+    @Column(name = "published_date", nullable = false)
+    String publishedDate;
+
+    @Column(columnDefinition = "text", nullable = false)
+    String description;
+
     @Column(name = "isbn_10", unique = true)
     String isbn10;
+
     @Column(name = "isbn_13", unique = true)
     String isbn13;
-    @Column(name = "open_library_id", unique = true)
-    String openLibraryId;
+
+    @Column(nullable = false)
+    String pages;
+
+    @Column(columnDefinition = "text", nullable = false)
+    String categories;
+
+    @Column(name = "cover_url", columnDefinition = "text", nullable = false)
+    String coverURL;
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -39,16 +52,17 @@ public class Book {
     protected Book() {
     }
 
-    public Book(String title, String authors, String description, String pages, String publisher, String coverURL, String publishDate, String isbn10, String isbn13, String openLibraryId) {
+    public Book(String googleId, String title, String authors, String publisher, String publishedDate, String description, String isbn10, String isbn13, String pages, String categories, String coverURL) {
+        this.googleId = googleId;
         this.title = title;
         this.authors = authors;
-        this.description = description;
-        this.pages = pages;
         this.publisher = publisher;
-        this.coverURL = coverURL;
-        this.publishDate = publishDate;
+        this.publishedDate = publishedDate;
+        this.description = description;
         this.isbn10 = isbn10;
         this.isbn13 = isbn13;
-        this.openLibraryId = openLibraryId;
+        this.pages = pages;
+        this.categories = categories;
+        this.coverURL = coverURL;
     }
 }
