@@ -1,7 +1,6 @@
 package giorgiaformicola.capstone.payloads;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -14,9 +13,9 @@ public record GoogleVolumeInfoDTO(
         @JsonProperty("industryIdentifiers")
         List<GoogleVolumeIdentifierDTO> identifiers,
         @JsonProperty("pageCount")
-        String pages,
+        Long pages,
         List<String> categories,
         @JsonProperty("imageLinks")
-        JsonNode coverURLS
+        GoogleVolumeImageLinksDTO coverURLS
 ) {
 }
