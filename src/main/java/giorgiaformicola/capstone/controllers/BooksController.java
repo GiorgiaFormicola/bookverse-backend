@@ -4,10 +4,7 @@ import giorgiaformicola.capstone.payloads.GoogleItemDTO;
 import giorgiaformicola.capstone.services.BooksService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/books")
@@ -38,5 +35,12 @@ public class BooksController {
                                              @RequestParam(defaultValue = "it") String language
     ) {
         return booksService.searchBooksFromGoogle(query, page, language);
+    }
+
+    @GetMapping("/search/{googleId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public GoogleItemDTO searchBookByIdFromAPI(@PathVariable String googleId
+    ) {
+        return booksService.searchBookByIdFromGoogle(googleId);
     }
 }

@@ -2,6 +2,7 @@ package giorgiaformicola.capstone.clients;
 
 import giorgiaformicola.capstone.exceptions.GoogleBooksException;
 import giorgiaformicola.capstone.payloads.GoogleBooksSearchResultDTO;
+import giorgiaformicola.capstone.payloads.GoogleItemDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -32,6 +33,31 @@ public class GoogleBooksClient {
                                 .build())
                         .retrieve()
                         .body(GoogleBooksSearchResultDTO.class);
+            } catch (Exception e) {
+                if (attempt == maxAttempts) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(10000 * attempt);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        throw new GoogleBooksException();
+    }
+
+    public GoogleItemDTO searchBookByGoogleId(String bookId) {
+        int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                return restClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/" + bookId)
+                                .queryParam("key", apiKey)
+                                .build())
+                        .retrieve()
+                        .body(GoogleItemDTO.class);
             } catch (Exception e) {
                 if (attempt == maxAttempts) {
                     throw e;

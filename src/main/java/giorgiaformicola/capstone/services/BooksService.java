@@ -63,5 +63,9 @@ public class BooksService {
         );
     }
 
+    public GoogleItemDTO searchBookByIdFromGoogle(String googleId) {
+        return googleBooksClient.searchBookByGoogleId(googleId);
+    }
+
 
 }
