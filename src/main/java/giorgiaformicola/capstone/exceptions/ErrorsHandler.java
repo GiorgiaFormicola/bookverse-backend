@@ -57,6 +57,11 @@ public class ErrorsHandler {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
 
-
+    @ExceptionHandler(GoogleBooksException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleGoogleBooksException(GoogleBooksException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+    
     //TODO: handle missing errors
 }

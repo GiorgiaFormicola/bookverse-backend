@@ -7,7 +7,7 @@ import tools.jackson.databind.JsonNode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record BookDetailsDTO(
+public record OpenLibraryBookDetailsDTO(
         List<String> publishers,
 
         @JsonProperty("description")

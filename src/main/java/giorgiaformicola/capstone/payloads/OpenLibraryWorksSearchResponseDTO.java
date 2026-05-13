@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record WorksSearchResponseDTO(
+public record OpenLibraryWorksSearchResponseDTO(
         @JsonProperty("numFound")
         long totalItems,
 
@@ -21,6 +21,6 @@ public record WorksSearchResponseDTO(
         String query,
 
         @JsonProperty("docs")
-        List<WorkCardDTO> books
+        List<OpenLibraryWorkCardDTO> books
 ) {
 }
