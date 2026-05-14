@@ -155,9 +155,10 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-    //TODO: handle deleting related records in the DB
+
     public void findByIdAndDelete(UUID userId) {
         User found = this.findById(userId);
+        this.userBooksRepository.deleteByUser_Id(found.getId());
         this.usersRepository.delete(found);
     }
 

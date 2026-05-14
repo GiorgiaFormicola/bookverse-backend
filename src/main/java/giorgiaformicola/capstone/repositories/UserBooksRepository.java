@@ -15,4 +15,8 @@ public interface UserBooksRepository extends JpaRepository<UserBook, UUID> {
     boolean existsByUser_IdAndBook_GoogleId(UUID userId, String googleId);
 
     Optional<UserBook> findUserBookByUser_IdAndBook_GoogleId(UUID userId, String googleId);
+
+    void deleteByUser_Id(UUID userId);
+
+    /*void deleteByBook_Id(UUID bookId);*/
 }

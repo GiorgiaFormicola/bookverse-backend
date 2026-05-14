@@ -77,7 +77,7 @@ public class UsersController {
     }
 
     //ENDPOINT PER ELIMINARE MIO PROFILO
-    //TODO: handle deleting all relationships
+    //TODO: handle deleting related records in the DB
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -133,6 +133,15 @@ public class UsersController {
             throw new PayloadValidationException(errors);
         }
         return this.usersService.findByIdAndUpdateStatus(currentAuthenticatedUser.getId(), userId, body);
+    }
+
+    //ENDPOINT PER ELIMINARE UTENTE COME ADMIN
+    //TODO: handle deleting related records in the DB
+    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserById(@PathVariable UUID userId) {
+        this.usersService.findByIdAndDelete(userId);
     }
 
 }
