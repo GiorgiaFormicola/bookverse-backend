@@ -31,8 +31,8 @@ public class UsersController {
     //ENDPOINT PER OTTENERE MIO PROFILLO
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
-        return this.usersService.findById(currentAuthenticatedUser.getId());
+    public UserProfileDTO getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
+        return this.usersService.getUserProfileById(currentAuthenticatedUser.getId());
     }
 
     //ENDPOINT PER AGGIORNARE MIO USERNAME, BIO E DISPLAY NAME

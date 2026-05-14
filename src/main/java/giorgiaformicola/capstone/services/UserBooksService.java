@@ -84,5 +84,8 @@ public class UserBooksService {
         return this.userBooksRepository.save(found);
     }
 
-    ;
+    /*public List<String> findUserBooksIds(UUID userId) {
+        List<UserBook> results = userBooksRepository.findUserBookByUser_Id(userId);
+        return results.stream().map(result -> result.getBook().getGoogleId()).toList();
+    }*/;
 }

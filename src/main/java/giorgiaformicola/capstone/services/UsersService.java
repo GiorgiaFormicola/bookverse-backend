@@ -9,6 +9,7 @@ import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.users.*;
+import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,12 +35,14 @@ public class UsersService {
     private final PasswordEncoder bCryptEncoder;
     private final TokenTools tokenTools;
     private final Cloudinary cloudinary;
+    private final UserBooksRepository userBooksRepository;
 
-    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary) {
+    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary, UserBooksRepository userBooksRepository) {
         this.usersRepository = usersRepository;
         this.bCryptEncoder = bCryptEncoder;
         this.tokenTools = tokenTools;
         this.cloudinary = cloudinary;
+        this.userBooksRepository = userBooksRepository;
     }
 
     public User save(RegistrationDTO body) {
@@ -54,6 +58,12 @@ public class UsersService {
 
     public User findById(UUID userId) {
         return this.usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("user", userId));
+    }
+
+    public UserProfileDTO getUserProfileById(UUID userId) {
+        User found = findById(userId);
+        List<String> booksIds = userBooksRepository.findUserBookByUser_Id(userId).stream().map(result -> result.getBook().getGoogleId()).toList();
+        return new UserProfileDTO(found, booksIds);
     }
 
 
