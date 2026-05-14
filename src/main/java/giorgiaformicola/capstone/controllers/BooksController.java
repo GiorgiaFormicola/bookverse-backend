@@ -46,12 +46,6 @@ public class BooksController {
         return booksService.searchBooksFromGoogle(query, page, language);
     }
 
-    /*@GetMapping("/search/{googleId}")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public BookDetailDTO searchBookByIdFromAPI(@PathVariable String googleId
-    ) {
-        return booksService.searchBookByIdFromGoogle(googleId);
-    }*/
 
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
     @GetMapping("/{googleId}")
@@ -60,7 +54,7 @@ public class BooksController {
         return booksService.getBookDetailsByGoogleId(googleId);
     }
 
-    //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN ? FORSE NON SERVE
+    //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -70,6 +64,14 @@ public class BooksController {
             throw new PayloadValidationException(errors);
         }
         return booksService.save(body);
+    }
+
+    //ENDPOINT PER ELIMINARE LIBRO DA DB COME ADMIN
+    @DeleteMapping("/{googleId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBookById(@PathVariable String googleId) {
+        booksService.findByIdAndDelete(googleId);
     }
 
 

@@ -8,6 +8,8 @@ import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.repositories.BooksRepository;
+import giorgiaformicola.capstone.repositories.UserBooksRepository;
+import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,11 +27,15 @@ public class BooksService {
     private final OpenLibraryClient openLibraryClient;
     private final GoogleBooksClient googleBooksClient;
     private final BooksRepository booksRepository;
+    private final UsersRepository usersRepository;
+    private final UserBooksRepository userBooksRepository;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, BookMapper bookMapper) {
+    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, BookMapper bookMapper, UsersRepository usersRepository, UserBooksRepository userBooksRepository) {
         this.openLibraryClient = openLibraryClient;
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
+        this.usersRepository = usersRepository;
+        this.userBooksRepository = userBooksRepository;
     }
 
     /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
@@ -125,4 +131,9 @@ public class BooksService {
     }
 
 
+    public void findByIdAndDelete(String googleId) {
+        Book found = getByGoogleId(googleId);
+        userBooksRepository.deleteByBook_Id(found.getId());
+        booksRepository.delete(found);
+    }
 }
