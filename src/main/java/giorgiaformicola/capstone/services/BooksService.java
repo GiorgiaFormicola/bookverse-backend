@@ -9,13 +9,10 @@ import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.repositories.BooksRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
-import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +25,12 @@ public class BooksService {
     private final OpenLibraryClient openLibraryClient;
     private final GoogleBooksClient googleBooksClient;
     private final BooksRepository booksRepository;
-    private final UsersRepository usersRepository;
     private final UserBooksRepository userBooksRepository;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, BookMapper bookMapper, UsersRepository usersRepository, UserBooksRepository userBooksRepository) {
+    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository) {
         this.openLibraryClient = openLibraryClient;
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
-        this.usersRepository = usersRepository;
         this.userBooksRepository = userBooksRepository;
     }
 
@@ -49,6 +44,19 @@ public class BooksService {
 
     public Book findById(UUID bookId) {
         return this.booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("book", bookId));
+    }
+
+    public Page<Book> findAll(Specification<Book> specification, int page, int size, String sortBy, String order) {
+        if (page < 0) page = 0;
+        if (size < 0 || size > 100) size = 20;
+
+        Pageable pageable = switch (order) {
+            case "asc" -> PageRequest.of(page, size, Sort.by(sortBy));
+            case "desc" -> PageRequest.of(page, size, Sort.by(sortBy).reverse());
+            default -> PageRequest.of(page, size, Sort.by(sortBy));
+        };
+
+        return this.booksRepository.findAll(specification, pageable);
     }
 
     public Page<GoogleItemDTO> searchBooksFromGoogle(String query, int page, String language) {

@@ -5,7 +5,9 @@ import giorgiaformicola.capstone.exceptions.PayloadValidationException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.services.BooksService;
+import giorgiaformicola.capstone.specifications.BooksSpecification;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -48,10 +50,66 @@ public class BooksController {
 
 
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
-    @GetMapping("/{googleId}")
+    @GetMapping("/search/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public BookDetailDTO getBookDetails(@PathVariable String googleId) {
         return booksService.getBookDetailsByGoogleId(googleId);
+    }
+
+    //ENDPOINT PER OTTENERE LISTA DEI LIBRI NEL DB COME ADMIN
+    //TODO: migliorare specification
+    @GetMapping()
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Page<Book> getBooksFromDb(@RequestParam(required = false) String title,
+                                     @RequestParam(required = false) String googleId,
+                                     @RequestParam(required = false) String author,
+                                     @RequestParam(required = false) String publisher,
+                                     @RequestParam(required = false) String isbn10,
+                                     @RequestParam(required = false) String isbn13,
+                                     @RequestParam(required = false) String category,
+                                     @RequestParam(required = false) Boolean missingTitle,
+                                     @RequestParam(required = false) Boolean missingAuthor,
+                                     @RequestParam(required = false) Boolean missingPublisher,
+                                     @RequestParam(required = false) Boolean missingIsbn10,
+                                     @RequestParam(required = false) Boolean missingIsbn13,
+                                     @RequestParam(required = false) Boolean missingCategory,
+                                     @RequestParam(required = false) Boolean missingPublishedDate,
+                                     @RequestParam(required = false) Boolean missingDescription,
+                                     @RequestParam(required = false) Boolean missingPages,
+                                     @RequestParam(required = false) Boolean missingCoverURL,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "20") int size,
+                                     @RequestParam(defaultValue = "title") String sortBy,
+                                     @RequestParam(defaultValue = "asc") String order) {
+
+        Specification<Book> specification = BooksSpecification.filter(
+                title,
+                googleId,
+                author,
+                publisher,
+                isbn10,
+                isbn13,
+                category,
+                missingTitle,
+                missingAuthor,
+                missingPublisher,
+                missingIsbn10,
+                missingIsbn13,
+                missingCategory,
+                missingPublishedDate,
+                missingDescription,
+                missingPages,
+                missingCoverURL
+        );
+
+        return booksService.findAll(specification, page, size, sortBy, order);
+    }
+
+    //ENDPOINT PER OTTENERE LIBRO DAL DB COME ADMIN
+    @GetMapping("/{googleId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Book getBookByGoogleId(@PathVariable String googleId) {
+        return booksService.getByGoogleId(googleId);
     }
 
     //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN
