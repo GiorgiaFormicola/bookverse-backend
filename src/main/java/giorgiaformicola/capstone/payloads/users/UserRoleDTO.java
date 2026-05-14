@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+package giorgiaformicola.capstone.payloads.users;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

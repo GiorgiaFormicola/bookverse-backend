@@ -8,7 +8,7 @@ import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
-import giorgiaformicola.capstone.payloads.*;
+import giorgiaformicola.capstone.payloads.users.*;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
 import lombok.extern.slf4j.Slf4j;
@@ -127,7 +127,8 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-    public User findByIdAndUpdateRole(UUID userId, UserRoleDTO body) {
+    public User findByIdAndUpdateRole(UUID adminId, UUID userId, UserRoleDTO body) {
+        if (adminId.equals(userId)) throw new BadRequestException("You can't update you own role");
         User found = this.findById(userId);
         if (found.getRole().name().equals(body.role()))
             throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
@@ -135,7 +136,8 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-    public User findByIdAndUpdateStatus(UUID userId, UserStatusDTO body) {
+    public User findByIdAndUpdateStatus(UUID adminId, UUID userId, UserStatusDTO body) {
+        if (adminId.equals(userId)) throw new BadRequestException("You can't update you own status");
         User found = this.findById(userId);
         if (body.isActive().equals(found.isActive()))
             throw new BadRequestException("The status of the user with id " + userId + " is already set to " + (found.isActive() ? "'active'" : "'inactive'"));

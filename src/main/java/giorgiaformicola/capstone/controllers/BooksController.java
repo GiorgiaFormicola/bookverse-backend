@@ -2,9 +2,8 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.BookDetailDTO;
-import giorgiaformicola.capstone.payloads.GoogleItemDTO;
-import giorgiaformicola.capstone.payloads.NewBookDTO;
+import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.services.BooksService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,20 +44,28 @@ public class BooksController {
         return booksService.searchBooksFromGoogle(query, page, language);
     }
 
-    @GetMapping("/search/{googleId}")
+    /*@GetMapping("/search/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public BookDetailDTO searchBookByIdFromAPI(@PathVariable String googleId
     ) {
         return booksService.searchBookByIdFromGoogle(googleId);
+    }*/
+
+    @GetMapping("/search/{googleId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public BookDetailDTO getBookDetails(@PathVariable String googleId) {
+        return booksService.getBookDetailsByGoogleId(googleId);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public Book saveNewBook(@RequestBody @Validated NewBookDTO body, BindingResult validationResult) {
+    public Book saveNewBook(@RequestBody @Validated BookDetailDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
             throw new PayloadValidationException(errors);
         }
         return booksService.save(body);
     }
+
+
 }

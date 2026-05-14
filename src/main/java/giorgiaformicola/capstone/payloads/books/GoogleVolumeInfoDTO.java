@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+package giorgiaformicola.capstone.payloads.books;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

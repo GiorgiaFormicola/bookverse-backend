@@ -2,7 +2,7 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.*;
+import giorgiaformicola.capstone.payloads.users.*;
 import giorgiaformicola.capstone.services.UsersService;
 import giorgiaformicola.capstone.specifications.UsersSpecification;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ public class UsersController {
     public UsersController(UsersService usersService) {
         this.usersService = usersService;
     }
-
+    
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
@@ -107,22 +107,22 @@ public class UsersController {
 
     @PatchMapping("/{userId}/role")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public User updateUserRole(@PathVariable UUID userId, @RequestBody @Validated UserRoleDTO body, BindingResult validationResult) {
+    public User updateUserRole(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID userId, @RequestBody @Validated UserRoleDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
             throw new PayloadValidationException(errors);
         }
-        return this.usersService.findByIdAndUpdateRole(userId, body);
+        return this.usersService.findByIdAndUpdateRole(currentAuthenticatedUser.getId(), userId, body);
     }
 
     @PatchMapping("/{userId}/status")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public User updateUserStatus(@PathVariable UUID userId, @RequestBody @Validated UserStatusDTO body, BindingResult validationResult) {
+    public User updateUserStatus(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID userId, @RequestBody @Validated UserStatusDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
             throw new PayloadValidationException(errors);
         }
-        return this.usersService.findByIdAndUpdateStatus(userId, body);
+        return this.usersService.findByIdAndUpdateStatus(currentAuthenticatedUser.getId(), userId, body);
     }
 
 }

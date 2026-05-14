@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+package giorgiaformicola.capstone.payloads.books;
 
 public record GoogleItemDTO(
         String id,

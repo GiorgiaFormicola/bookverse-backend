@@ -1,8 +1,8 @@
 package giorgiaformicola.capstone.clients;
 
 import giorgiaformicola.capstone.exceptions.GoogleBooksException;
-import giorgiaformicola.capstone.payloads.GoogleBooksSearchResultDTO;
-import giorgiaformicola.capstone.payloads.GoogleItemDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleBooksSearchResultDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;

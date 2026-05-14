@@ -1,7 +1,7 @@
 package giorgiaformicola.capstone.exceptions;
 
-import giorgiaformicola.capstone.payloads.ErrorDTO;
-import giorgiaformicola.capstone.payloads.ErrorsListDTO;
+import giorgiaformicola.capstone.payloads.errors.ErrorDTO;
+import giorgiaformicola.capstone.payloads.errors.ErrorsListDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,6 +62,6 @@ public class ErrorsHandler {
     public ErrorDTO handleGoogleBooksException(GoogleBooksException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
-    
+
     //TODO: handle missing errors
 }

@@ -1,7 +1,7 @@
 package giorgiaformicola.capstone.clients;
 
-import giorgiaformicola.capstone.payloads.OpenLibraryBookDetailsDTO;
-import giorgiaformicola.capstone.payloads.OpenLibraryWorksSearchResponseDTO;
+import giorgiaformicola.capstone.payloads.books.OpenLibraryBookDetailsDTO;
+import giorgiaformicola.capstone.payloads.books.OpenLibraryWorksSearchResponseDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 

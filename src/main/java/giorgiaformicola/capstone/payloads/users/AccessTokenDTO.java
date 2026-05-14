@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+package giorgiaformicola.capstone.payloads.users;
 
 public record AccessTokenDTO(
         String token

@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+/*package giorgiaformicola.capstone.payloads;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ public record NewBookDTO(
         String title,
         @NotNull(message = "Authors is mandatory")
         List<String> authors,
-        /*@NotBlank(message = "Publisher is mandatory")
+        *//*@NotBlank(message = "Publisher is mandatory")
         String publisher,
         @NotBlank(message = "Published date is mandatory")
         String publishedDate,
@@ -24,10 +24,10 @@ public record NewBookDTO(
         String isbn13,
         @NotBlank(message = "Isbn13 code is mandatory")
         String pages,
-        */
+        *//*
         @NotNull(message = "Categories list is mandatory")
         List<String> categories,
         @NotBlank(message = "Cover url is mandatory")
         String coverURL
 ) {
-}
+}*/

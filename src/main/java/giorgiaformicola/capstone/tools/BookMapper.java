@@ -1,9 +1,9 @@
 package giorgiaformicola.capstone.tools;
 
-import giorgiaformicola.capstone.payloads.BookDetailDTO;
-import giorgiaformicola.capstone.payloads.GoogleItemDTO;
-import giorgiaformicola.capstone.payloads.GoogleVolumeIdentifierDTO;
-import giorgiaformicola.capstone.payloads.GoogleVolumeImageLinksDTO;
+import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleVolumeIdentifierDTO;
+import giorgiaformicola.capstone.payloads.books.GoogleVolumeImageLinksDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

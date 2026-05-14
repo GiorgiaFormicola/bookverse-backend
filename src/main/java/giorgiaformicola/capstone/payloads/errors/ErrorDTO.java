@@ -1,4 +1,4 @@
-package giorgiaformicola.capstone.payloads;
+package giorgiaformicola.capstone.payloads.errors;
 
 import java.time.LocalDateTime;
 

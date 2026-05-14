@@ -2,9 +2,9 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.AccessTokenDTO;
-import giorgiaformicola.capstone.payloads.LoginDTO;
-import giorgiaformicola.capstone.payloads.RegistrationDTO;
+import giorgiaformicola.capstone.payloads.users.AccessTokenDTO;
+import giorgiaformicola.capstone.payloads.users.LoginDTO;
+import giorgiaformicola.capstone.payloads.users.RegistrationDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
