@@ -2,8 +2,7 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
-import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
+import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.services.BooksService;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import org.springframework.data.domain.Page;
@@ -13,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -110,6 +110,46 @@ public class BooksController {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book getBookByGoogleId(@PathVariable String googleId) {
         return booksService.getByGoogleId(googleId);
+    }
+
+    //ENDPOINT PER AGGIORNARE LIBRO DAL DB COME ADMIN
+    @PutMapping("/{googleId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Book updateBookInfo(@PathVariable String googleId, @RequestBody @Validated BookInfoDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return booksService.findByIdAndUpdateBookInfo(googleId, body);
+    }
+
+    //ENDPOINT PER AGGIORNARE COVER LIBRO DAL COME ADMIN
+    @PatchMapping("/{googleId}/cover")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Book updateBookCover(@PathVariable String googleId, @RequestParam("book_cover") MultipartFile file) {
+        return booksService.findByIdAndUpdateBookCover(googleId, file);
+    }
+
+    //ENDPOINT PER AGGIORNARE AUTORI LIBRO DAL COME ADMIN
+    @PatchMapping("/{googleId}/authors")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Book updateBookAuthors(@PathVariable String googleId, @RequestBody @Validated AuthorsDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return booksService.findByIdAndUpdateBookAuthors(googleId, body);
+    }
+
+    //ENDPOINT PER AGGIORNARE CATEGORIE LIBRO DAL COME ADMIN
+    @PatchMapping("/{googleId}/categories")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public Book updateBookCategories(@PathVariable String googleId, @RequestBody @Validated CategoriesDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        return booksService.findByIdAndUpdateBookCategories(googleId, body);
     }
 
     //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN
