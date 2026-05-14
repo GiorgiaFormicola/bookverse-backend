@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -155,7 +156,7 @@ public class UsersService {
         return this.usersRepository.save(found);
     }
 
-
+    @Transactional
     public void findByIdAndDelete(UUID userId) {
         User found = this.findById(userId);
         this.userBooksRepository.deleteByUser_Id(found.getId());
