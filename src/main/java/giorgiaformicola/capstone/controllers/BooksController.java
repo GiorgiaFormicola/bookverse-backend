@@ -6,6 +6,7 @@ import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.services.BooksService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +36,7 @@ public class BooksController {
         return booksService.getBookFromAPI(editionId);
     }*/
 
+    //ENDPOINT PER CERCARE LIBRI DA GOOGLE
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Page<GoogleItemDTO> searchFromAPI(@RequestParam String query,
@@ -51,14 +53,17 @@ public class BooksController {
         return booksService.searchBookByIdFromGoogle(googleId);
     }*/
 
-    @GetMapping("/search/{googleId}")
+    //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
+    @GetMapping("/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public BookDetailDTO getBookDetails(@PathVariable String googleId) {
         return booksService.getBookDetailsByGoogleId(googleId);
     }
 
+    //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN ? FORSE NON SERVE
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @ResponseStatus(HttpStatus.CREATED)
     public Book saveNewBook(@RequestBody @Validated BookDetailDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();

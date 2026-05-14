@@ -27,13 +27,15 @@ public class UsersController {
     public UsersController(UsersService usersService) {
         this.usersService = usersService;
     }
-    
+
+    //ENDPOINT PER OTTENERE MIO PROFILLO
     @GetMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User getMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser) {
         return this.usersService.findById(currentAuthenticatedUser.getId());
     }
 
+    //ENDPOINT PER AGGIORNARE MIO USERNAME, BIO E DISPLAY NAME
     @PutMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User updateMyProfile(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated ProfileUpdateDTO body, BindingResult validationResult) {
@@ -44,12 +46,14 @@ public class UsersController {
         return this.usersService.findByIdAndUpdateProfile(currentAuthenticatedUser.getId(), body);
     }
 
+    //ENDPOINT PER AGGIORNARE MIA IMMAGINE
     @PatchMapping("/me/picture")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User updateMyProfilePicture(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestParam("profile_picture") MultipartFile file) {
         return this.usersService.findByIdAndUpdateProfilePicture(currentAuthenticatedUser.getId(), file);
     }
 
+    //ENDPOINT PER AGGIORNARE MIA EMAIL
     //TODO: verify email
     @PatchMapping("/me/email")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
@@ -61,6 +65,7 @@ public class UsersController {
         return this.usersService.findByIdAndUpdateEmail(currentAuthenticatedUser.getId(), body);
     }
 
+    //ENDPOINT PER AGGIORNARE MIA PASSWORD
     @PatchMapping("/me/password")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public User updateMyPassword(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody @Validated PasswordUpdateDTO body, BindingResult validationResult) {
@@ -71,6 +76,8 @@ public class UsersController {
         return this.usersService.findByIdAndUpdatePassword(currentAuthenticatedUser.getId(), body);
     }
 
+    //ENDPOINT PER ELIMINARE MIO PROFILO
+    //TODO: handle deleting all relationships
     @DeleteMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -78,7 +85,7 @@ public class UsersController {
         this.usersService.findByIdAndDelete(currentAuthenticatedUser.getId());
     }
 
-
+    //ENDPOINT PER VEDERE PROFILO DI UN ALTRO UTENTE COME ADMIN
     //TODO:add USER authority only if following
     @GetMapping("/{userId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
@@ -86,6 +93,7 @@ public class UsersController {
         return this.usersService.findById(userId);
     }
 
+    //ENDPOINT PER VEDERE TUTTI GLI UTENTI COME ADMIN
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Page<User> getUsers(@RequestParam(required = false) String username,
@@ -105,6 +113,7 @@ public class UsersController {
         return this.usersService.findAll(specification, page, size, sortBy, order);
     }
 
+    //ENDPOINT PER CAMBIARE RUOLO UTENTE COME ADMIN
     @PatchMapping("/{userId}/role")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public User updateUserRole(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID userId, @RequestBody @Validated UserRoleDTO body, BindingResult validationResult) {
@@ -115,6 +124,7 @@ public class UsersController {
         return this.usersService.findByIdAndUpdateRole(currentAuthenticatedUser.getId(), userId, body);
     }
 
+    //ENDPOINT PER CAMBIARE STATO UTENTE COME ADMIN
     @PatchMapping("/{userId}/status")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public User updateUserStatus(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable UUID userId, @RequestBody @Validated UserStatusDTO body, BindingResult validationResult) {

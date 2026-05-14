@@ -3,11 +3,15 @@ package giorgiaformicola.capstone.services;
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.entities.UserBook;
+import giorgiaformicola.capstone.enums.StatusType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
+import giorgiaformicola.capstone.payloads.books.BookStatusDTO;
+import giorgiaformicola.capstone.payloads.books.BookVisibilityDTO;
 import giorgiaformicola.capstone.payloads.books.UserLibraryBookDTO;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
+import giorgiaformicola.capstone.repositories.UsersRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,11 +22,13 @@ public class UserBooksService {
     private final UserBooksRepository userBooksRepository;
     private final UsersService usersService;
     private final BooksService booksService;
+    private final UsersRepository usersRepository;
 
-    public UserBooksService(UserBooksRepository userBooksRepository, UsersService usersService, BooksService booksService) {
+    public UserBooksService(UserBooksRepository userBooksRepository, UsersService usersService, BooksService booksService, UsersRepository usersRepository) {
         this.userBooksRepository = userBooksRepository;
         this.usersService = usersService;
         this.booksService = booksService;
+        this.usersRepository = usersRepository;
     }
 
     public UserBook save(UUID userId, UUID bookId) {
@@ -53,4 +59,30 @@ public class UserBooksService {
         List<UserBook> results = userBooksRepository.findUserBookByUser_Id(found.getId());
         return results.stream().map(result -> new UserLibraryBookDTO(result.getBook(), result.getId(), result.isPublic(), result.getStatus())).toList();
     }
+
+    public void deleteBookFromUserLibrary(UUID userId, String googleId) {
+        User userFound = usersService.findById(userId);
+        UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
+        userBooksRepository.delete(found);
+    }
+
+    public UserBook updateBookVisibilityFromUserLibrary(UUID userId, String googleId, BookVisibilityDTO body) {
+        User userFound = usersService.findById(userId);
+        UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
+        if (found.isPublic() == body.isPublic())
+            throw new BadRequestException("The book visibility is already set to " + (body.isPublic() ? "public" : "private"));
+        found.setPublic(body.isPublic());
+        return this.userBooksRepository.save(found);
+    }
+
+    public UserBook updateBookStatusFromUserLibrary(UUID userId, String googleId, BookStatusDTO body) {
+        User userFound = usersService.findById(userId);
+        UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
+        if (found.getStatus().equals(StatusType.valueOf(body.status())))
+            throw new BadRequestException("The book status is already set to " + body.status());
+        found.setStatus(StatusType.valueOf(body.status()));
+        return this.userBooksRepository.save(found);
+    }
+
+    ;
 }

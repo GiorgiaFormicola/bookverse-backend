@@ -11,5 +11,9 @@ public class NotFoundException extends RuntimeException {
         super("The " + resourceType + " with id " + resourceId + " has not been found.");
     }
 
+    public NotFoundException(String message) {
+        super(message);
+    }
+
 
 }

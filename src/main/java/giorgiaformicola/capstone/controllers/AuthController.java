@@ -23,6 +23,7 @@ public class AuthController {
         this.usersService = usersService;
     }
 
+    //ENDPOINT REGISTRAZIONE
     //TODO: send registration email
     //TODO: verify email
     @PostMapping("register")
@@ -35,6 +36,7 @@ public class AuthController {
         return this.usersService.save(body);
     }
 
+    //ENDPOINT LOGIN
     @PostMapping("login")
     public AccessTokenDTO login(@RequestBody @Validated LoginDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
