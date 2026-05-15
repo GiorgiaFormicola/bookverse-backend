@@ -3,6 +3,7 @@ package giorgiaformicola.capstone.exceptions;
 import giorgiaformicola.capstone.payloads.errors.ErrorDTO;
 import giorgiaformicola.capstone.payloads.errors.ErrorsListDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -62,6 +63,13 @@ public class ErrorsHandler {
     public ErrorDTO handleGoogleBooksException(GoogleBooksException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
 
     //TODO: handle missing errors
 }

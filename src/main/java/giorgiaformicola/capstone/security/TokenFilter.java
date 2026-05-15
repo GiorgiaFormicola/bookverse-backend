@@ -31,16 +31,21 @@ public class TokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
-            throw new UnauthorizedException("Invalid token supplied in the authorization header");
-        String accessToken = authorizationHeader.replace("Bearer ", "");
-        tokenTools.verifyToken(accessToken);
-        UUID userId = this.tokenTools.extractIdFromToken(accessToken);
-        User authenticatedUser = this.usersService.findById(userId);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, authenticatedUser.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request, response);
+        try {
+            String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+                throw new UnauthorizedException("Invalid token supplied in the authorization header");
+            String accessToken = authorizationHeader.replace("Bearer ", "");
+            tokenTools.verifyToken(accessToken);
+            UUID userId = this.tokenTools.extractIdFromToken(accessToken);
+            User authenticatedUser = this.usersService.findById(userId);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, authenticatedUser.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            filterChain.doFilter(request, response);
+        } catch (Exception ex) {
+            response.sendError(401, ex.getMessage());
+        }
+
     }
 
     @Override
