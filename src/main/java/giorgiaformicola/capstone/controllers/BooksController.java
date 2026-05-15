@@ -1,6 +1,7 @@
 package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.Book;
+import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.services.BooksService;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,35 +27,22 @@ public class BooksController {
         this.booksService = booksService;
     }
 
-    /*@GetMapping("/search")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public OpenLibraryWorksSearchResponseDTO searchFromAPI(@RequestParam String query,
-                                                           @RequestParam(defaultValue = "0") int page) {
-        return booksService.searchWorksFromAPI(query, page);
-    }
-
-    @GetMapping("/search/{editionId}")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public OpenLibraryBookDetailsDTO getBookDetailsFromAPI(@PathVariable String editionId) {
-        return booksService.getBookFromAPI(editionId);
-    }*/
-
     //ENDPOINT PER CERCARE LIBRI DA GOOGLE
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public Page<GoogleItemDTO> searchFromAPI(@RequestParam String query,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "it") String language
+    public Page<GoogleItemDTO> searchFromAPI(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                             @RequestParam String query,
+                                             @RequestParam(defaultValue = "0") int page
     ) {
-        return booksService.searchBooksFromGoogle(query, page, language);
+        return booksService.searchBooksFromGoogle(currentAuthenticatedUser.getId(), query, page);
     }
 
 
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
     @GetMapping("/search/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public BookDetailDTO getBookDetails(@PathVariable String googleId) {
-        return booksService.getBookDetailsByGoogleId(googleId);
+    public BookDetailDTO getBookDetails(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
+        return booksService.getBookDetailsByGoogleId(currentAuthenticatedUser.getId(), googleId);
     }
 
     //ENDPOINT PER OTTENERE LISTA DEI LIBRI NEL DB COME ADMIN
@@ -172,5 +161,16 @@ public class BooksController {
         booksService.findByIdAndDelete(googleId);
     }
 
+    /*@GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public OpenLibraryWorksSearchResponseDTO searchFromAPI(@RequestParam String query,
+                                                           @RequestParam(defaultValue = "0") int page) {
+        return booksService.searchWorksFromAPI(query, page);
+    }
 
+    @GetMapping("/search/{editionId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public OpenLibraryBookDetailsDTO getBookDetailsFromAPI(@PathVariable String editionId) {
+        return booksService.getBookFromAPI(editionId);
+    }*/
 }

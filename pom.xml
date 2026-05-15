@@ -106,6 +106,17 @@
             <version>1.39.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java-core</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-objectmapper-jackson</artifactId>
+            <version>4.2.9</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

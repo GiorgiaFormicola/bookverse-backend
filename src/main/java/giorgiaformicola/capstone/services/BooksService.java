@@ -31,14 +31,16 @@ public class BooksService {
     private final GoogleBooksClient googleBooksClient;
     private final BooksRepository booksRepository;
     private final UserBooksRepository userBooksRepository;
+    private final UsersService usersService;
     private final Cloudinary cloudinary;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary) {
+    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService) {
         this.openLibraryClient = openLibraryClient;
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
         this.userBooksRepository = userBooksRepository;
         this.cloudinary = cloudinary;
+        this.usersService = usersService;
     }
 
     /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
@@ -66,11 +68,12 @@ public class BooksService {
         return this.booksRepository.findAll(specification, pageable);
     }
 
-    public Page<GoogleItemDTO> searchBooksFromGoogle(String query, int page, String language) {
+    public Page<GoogleItemDTO> searchBooksFromGoogle(UUID userId, String query, int page) {
+        usersService.checkIfUserIsActive(userId);
         if (query.isBlank()) throw new BadRequestException("You must provide a valid query string");
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 10);
-        List<GoogleItemDTO> itemsFiltered = googleBooksClient.searchBooks(query, language)
+        List<GoogleItemDTO> itemsFiltered = googleBooksClient.searchBooks(query)
                 .items()
                 .stream()
                 .filter(item -> item != null && item.id() != null && item.volumeInfo() != null).toList();
@@ -126,7 +129,8 @@ public class BooksService {
 
     ;
 
-    public BookDetailDTO getBookDetailsByGoogleId(String googleId) {
+    public BookDetailDTO getBookDetailsByGoogleId(UUID userId, String googleId) {
+        usersService.checkIfUserIsActive(userId);
         try {
             Book found = this.getByGoogleId(googleId);
             return new BookDetailDTO(
