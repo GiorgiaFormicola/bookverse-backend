@@ -18,17 +18,16 @@ public class GoogleBooksClient {
 
     }
 
-    public GoogleBooksSearchResultDTO searchBooks(String query, String language) {
+    /*public GoogleBooksSearchResultDTO searchBooks(String query) {
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 return restClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .queryParam("q", query)
-                                .queryParam("langRestrict", language)
                                 .queryParam("maxResults", 40)
                                 .queryParam("printType", "books")
-                                /*.queryParam("startIndex", page * 20)*/
+                                *//*.queryParam("startIndex", page * 20)*//*
                                 .queryParam("key", apiKey)
                                 .build())
                         .retrieve()
@@ -45,7 +44,7 @@ public class GoogleBooksClient {
             }
         }
         throw new GoogleBooksException();
-    }
+    }*/
 
     public GoogleItemDTO searchBookByGoogleId(String bookId) {
         int maxAttempts = 3;
@@ -70,5 +69,19 @@ public class GoogleBooksClient {
             }
         }
         throw new GoogleBooksException();
+    }
+
+    //SEARCH TEST
+    public GoogleBooksSearchResultDTO searchBooks(String query) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("q", query)
+                        .queryParam("maxResults", 40)
+                        .queryParam("printType", "books")
+                        /*.queryParam("startIndex", page * 20)*/
+                        .queryParam("key", apiKey)
+                        .build())
+                .retrieve()
+                .body(GoogleBooksSearchResultDTO.class);
     }
 }

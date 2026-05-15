@@ -2,7 +2,10 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.books.*;
+import giorgiaformicola.capstone.payloads.books.AuthorsDTO;
+import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
+import giorgiaformicola.capstone.payloads.books.BookInfoDTO;
+import giorgiaformicola.capstone.payloads.books.CategoriesDTO;
 import giorgiaformicola.capstone.services.BooksService;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import org.springframework.data.domain.Page;
@@ -41,11 +44,8 @@ public class BooksController {
     //ENDPOINT PER CERCARE LIBRI DA GOOGLE
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public Page<GoogleItemDTO> searchFromAPI(@RequestParam String query,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "it") String language
-    ) {
-        return booksService.searchBooksFromGoogle(query, page, language);
+    public List<Book> searchFromAPI(@RequestParam String query) {
+        return booksService.searchBooks(query);
     }
 
 

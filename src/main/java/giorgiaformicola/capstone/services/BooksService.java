@@ -7,13 +7,17 @@ import giorgiaformicola.capstone.clients.OpenLibraryClient;
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
+import giorgiaformicola.capstone.exceptions.SearchException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,32 +70,46 @@ public class BooksService {
         return this.booksRepository.findAll(specification, pageable);
     }
 
-    public Page<GoogleItemDTO> searchBooksFromGoogle(String query, int page, String language) {
+    public List<BookDetailDTO> searchBooksFromGoogle(String query) {
         if (query.isBlank()) throw new BadRequestException("You must provide a valid query string");
-        if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 10);
-        List<GoogleItemDTO> itemsFiltered = googleBooksClient.searchBooks(query, language)
+        List<BookDetailDTO> itemsFiltered = googleBooksClient.searchBooks(query)
                 .items()
                 .stream()
-                .filter(item -> item != null && item.id() != null && item.volumeInfo() != null).toList();
-
-
+                .filter(item -> item != null && item.id() != null && item.volumeInfo() != null).map(item -> BookMapper.mapFromGoogleItemDTO(item)).toList();
         System.out.println("Items filtered = " + itemsFiltered.size());
+        return itemsFiltered;
+    }
 
-        int start = Math.toIntExact(pageable.getOffset());
-        int end = Math.min(start + pageable.getPageSize(), itemsFiltered.size());
+    public List<Book> searchBooks(String query) {
+        try {
+            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(query);
+            List<Book> books = booksFromGoogle.stream().map(bookDetailDTO -> new Book(
+                    bookDetailDTO.googleId(),
+                    bookDetailDTO.title(),
+                    bookDetailDTO.authors(),
+                    bookDetailDTO.publisher(),
+                    bookDetailDTO.publishedDate(),
+                    bookDetailDTO.description(),
+                    bookDetailDTO.isbn10(),
+                    bookDetailDTO.isbn13(),
+                    bookDetailDTO.pages(),
+                    bookDetailDTO.categories(),
+                    bookDetailDTO.coverURL())).toList();
 
-        if (start >= itemsFiltered.size()) {
-            return Page.empty(pageable);
+            for (Book book : books) {
+                try {
+                    this.save(book);
+                } catch (BadRequestException ex) {
+                    // skip this book
+                }
+            }
+
+            return books;
+        } catch (Exception ex) {
+            List<Book> booksFromDBByTitle = booksRepository.findAllByTitleContainsIgnoreCase(query);
+            if (booksFromDBByTitle.isEmpty()) throw new SearchException();
+            return booksFromDBByTitle;
         }
-
-        List<GoogleItemDTO> pageContent = itemsFiltered.subList(start, end);
-
-        return new PageImpl<>(
-                pageContent,
-                pageable,
-                itemsFiltered.size()
-        );
     }
 
     public BookDetailDTO searchBookByIdFromGoogle(String googleId) {
@@ -118,6 +136,12 @@ public class BooksService {
         return booksRepository.save(newBook);
     }
 
+    public Book save(Book book) {
+        if (booksRepository.existsByGoogleId(book.getGoogleId()))
+            throw new BadRequestException("Book already saved in the database");
+        return booksRepository.save(book);
+    }
+
     public Book getByGoogleId(String googleId) {
         if (googleId == null || googleId.isBlank())
             throw new BadRequestException("You must provide a valid id");
@@ -125,6 +149,7 @@ public class BooksService {
     }
 
     ;
+
 
     public BookDetailDTO getBookDetailsByGoogleId(String googleId) {
         try {
