@@ -15,20 +15,14 @@ import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -49,14 +43,6 @@ public class BooksService {
         this.usersService = usersService;
     }
 
-    /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
-        return openLibraryClient.searchWorks(query, page);
-    }
-
-    public OpenLibraryBookDetailsDTO getBookFromOpenLibrary(String editionId) {
-        return openLibraryClient.searchBook(editionId);
-    }*/
-
     public Book findById(UUID bookId) {
         return this.booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("book", bookId));
     }
@@ -65,11 +51,16 @@ public class BooksService {
     public Page<Book> findAll(Specification<Book> specification, int page, int size, String sortBy, String order) {
         if (page < 0) page = 0;
         if (size < 0 || size > 100) size = 20;
+        String orderCriteria = switch (sortBy) {
+            case "publisher" -> "publisher";
+            case "pages" -> "pages";
+            default -> "title";
+        };
 
         Pageable pageable = switch (order) {
-            case "asc" -> PageRequest.of(page, size, Sort.by(sortBy));
-            case "desc" -> PageRequest.of(page, size, Sort.by(sortBy).reverse());
-            default -> PageRequest.of(page, size, Sort.by(sortBy));
+            case "asc" -> PageRequest.of(page, size, Sort.by(orderCriteria));
+            case "desc" -> PageRequest.of(page, size, Sort.by(orderCriteria).reverse());
+            default -> PageRequest.of(page, size, Sort.by(orderCriteria));
         };
 
         return this.booksRepository.findAll(specification, pageable);
@@ -86,7 +77,8 @@ public class BooksService {
         return itemsFiltered;
     }
 
-    public List<Book> searchBooks(UUID userId, SearchFieldsDTO searchFields) {
+    public Page<Book> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
+        System.out.println(sortBy);
         usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
@@ -110,12 +102,35 @@ public class BooksService {
                     // skip this book because already exists in the db
                 }
             }
-            return books;
+
+            if (page < 0) page = 0;
+
+
+            Comparator<Book> comparator = switch (sortBy) {
+                case "title" ->
+                        Comparator.comparing(Book::getTitle, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+                case "publisher" ->
+                        Comparator.comparing(Book::getPublisher, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+                case "pages" -> Comparator.comparing(Book::getPages, Comparator.nullsLast(Comparator.naturalOrder()));
+                default -> null;
+            };
+
+            if (comparator == null && order.equals("desc")) books = books.reversed();
+            if (comparator != null && !order.equals("desc")) books = books.stream().sorted(comparator).toList();
+            if (comparator != null && order.equals("desc"))
+                books = books.stream().sorted(comparator.reversed()).toList();
+
+            Pageable pageable = PageRequest.of(page, 10);
+
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), books.size());
+            List<Book> pageContent = books.subList(start, end);
+            return new PageImpl<>(pageContent, pageable, books.size());
         } catch (Exception ex) {
             Specification<Book> specification = BooksSpecification.filter(
                     searchFields.title(),
                     searchFields.author(),
-                    searchFields.category(),
+                    searchFields.publisher(),
                     searchFields.isbn(),
                     searchFields.isbn(),
                     searchFields.category()
@@ -123,7 +138,9 @@ public class BooksService {
 
             List<Book> booksFromDBfiltered = booksRepository.findAll(specification);
             if (booksFromDBfiltered.isEmpty()) throw new SearchException();
-            return booksFromDBfiltered;
+            if (sortBy == null || sortBy.isBlank()) sortBy = "title";
+            Page<Book> booksFromDBPagedAndFiltered = findAll(specification, page, 10, sortBy, order);
+            return booksFromDBPagedAndFiltered;
         }
     }
 
@@ -163,9 +180,6 @@ public class BooksService {
         return booksRepository.findByGoogleId(googleId).orElseThrow(() -> new NotFoundException("book", googleId));
     }
 
-    ;
-
-
     public BookDetailDTO getBookDetailsByGoogleId(UUID userId, String googleId) {
         usersService.checkIfUserIsActive(userId);
         try {
@@ -185,13 +199,6 @@ public class BooksService {
         } catch (NotFoundException ex) {
             return searchBookByIdFromGoogle(googleId);
         }
-    }
-
-    @Transactional
-    public void findByIdAndDelete(String googleId) {
-        Book found = getByGoogleId(googleId);
-        userBooksRepository.deleteByBook_Id(found.getId());
-        booksRepository.delete(found);
     }
 
     public Book findByIdAndUpdateBookInfo(String googleId, BookInfoDTO body) {
@@ -239,6 +246,13 @@ public class BooksService {
     }
 
     @Transactional
+    public void findByIdAndDelete(String googleId) {
+        Book found = getByGoogleId(googleId);
+        userBooksRepository.deleteByBook_Id(found.getId());
+        booksRepository.delete(found);
+    }
+
+    @Transactional
     public Book findByIdAndUpdateBookAuthors(String googleId, AuthorsDTO body) {
         Book found = getByGoogleId(googleId);
         found.setAuthors(body.authors());
@@ -251,4 +265,12 @@ public class BooksService {
         found.setCategories(body.categories());
         return booksRepository.save(found);
     }
+
+    /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
+        return openLibraryClient.searchWorks(query, page);
+    }
+
+    public OpenLibraryBookDetailsDTO getBookFromOpenLibrary(String editionId) {
+        return openLibraryClient.searchBook(editionId);
+    }*/
 }

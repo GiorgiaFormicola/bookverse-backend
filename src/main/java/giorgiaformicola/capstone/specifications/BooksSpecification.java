@@ -98,9 +98,9 @@ public class BooksSpecification {
             String title,
             String author,
             String publisher,
-            String category,
             String isbn10,
-            String isbn13
+            String isbn13,
+            String category
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

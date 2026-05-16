@@ -77,6 +77,12 @@ public class ErrorsHandler {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
 
+    @ExceptionHandler(SearchException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDTO handleSearchException(SearchException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
 
     //TODO: handle missing errors
 }
