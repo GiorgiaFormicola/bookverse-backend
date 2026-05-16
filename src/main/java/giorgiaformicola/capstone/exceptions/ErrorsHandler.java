@@ -3,11 +3,13 @@ package giorgiaformicola.capstone.exceptions;
 import giorgiaformicola.capstone.payloads.errors.ErrorDTO;
 import giorgiaformicola.capstone.payloads.errors.ErrorsListDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MultipartException;
 
 import java.time.LocalDateTime;
 
@@ -62,6 +64,19 @@ public class ErrorsHandler {
     public ErrorDTO handleGoogleBooksException(GoogleBooksException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        return new ErrorDTO("Oops, something went wrong with you request", LocalDateTime.now());
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleMultipartException(MultipartException ex) {
+        return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
 
     //TODO: handle missing errors
 }

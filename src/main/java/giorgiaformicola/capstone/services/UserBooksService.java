@@ -40,7 +40,7 @@ public class UserBooksService {
     }
 
     public UserBook saveBookToUserLibrary(UUID userId, BookDetailDTO body) {
-        User userFound = usersService.findById(userId);
+        User userFound = usersService.checkIfUserIsActive(userId);
         if (userBooksRepository.existsByUser_IdAndBook_GoogleId(userId, body.googleId()))
             throw new BadRequestException("Book already saved in the user " + userId + "library");
         try {
@@ -55,19 +55,13 @@ public class UserBooksService {
     }
 
     public List<UserLibraryBookDTO> findUserBooks(UUID userId) {
-        User found = usersService.findById(userId);
+        User found = usersService.checkIfUserIsActive(userId);
         List<UserBook> results = userBooksRepository.findUserBookByUser_Id(found.getId());
         return results.stream().map(result -> new UserLibraryBookDTO(result.getBook(), result.getId(), result.isPublic(), result.getStatus())).toList();
     }
 
-    public void deleteBookFromUserLibrary(UUID userId, String googleId) {
-        User userFound = usersService.findById(userId);
-        UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
-        userBooksRepository.delete(found);
-    }
-
     public UserBook updateBookVisibilityFromUserLibrary(UUID userId, String googleId, BookVisibilityDTO body) {
-        User userFound = usersService.findById(userId);
+        User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         if (found.isPublic() == body.isPublic())
             throw new BadRequestException("The book visibility is already set to " + (body.isPublic() ? "public" : "private"));
@@ -76,7 +70,7 @@ public class UserBooksService {
     }
 
     public UserBook updateBookStatusFromUserLibrary(UUID userId, String googleId, BookStatusDTO body) {
-        User userFound = usersService.findById(userId);
+        User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         if (found.getStatus().equals(StatusType.valueOf(body.status())))
             throw new BadRequestException("The book status is already set to " + body.status());
@@ -84,8 +78,9 @@ public class UserBooksService {
         return this.userBooksRepository.save(found);
     }
 
-    /*public List<String> findUserBooksIds(UUID userId) {
-        List<UserBook> results = userBooksRepository.findUserBookByUser_Id(userId);
-        return results.stream().map(result -> result.getBook().getGoogleId()).toList();
-    }*/;
+    public void deleteBookFromUserLibrary(UUID userId, String googleId) {
+        User userFound = usersService.checkIfUserIsActive(userId);
+        UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
+        userBooksRepository.delete(found);
+    }
 }

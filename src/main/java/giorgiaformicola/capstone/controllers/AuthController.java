@@ -24,7 +24,7 @@ public class AuthController {
     }
 
     //ENDPOINT REGISTRAZIONE
-    //TODO: send registration email
+    //TODO: update registration email sender
     //TODO: verify email
     @PostMapping("register")
     @ResponseStatus(HttpStatus.CREATED)

@@ -37,14 +37,16 @@ public class BooksService {
     private final GoogleBooksClient googleBooksClient;
     private final BooksRepository booksRepository;
     private final UserBooksRepository userBooksRepository;
+    private final UsersService usersService;
     private final Cloudinary cloudinary;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary) {
+    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService) {
         this.openLibraryClient = openLibraryClient;
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
         this.userBooksRepository = userBooksRepository;
         this.cloudinary = cloudinary;
+        this.usersService = usersService;
     }
 
     /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
@@ -84,7 +86,8 @@ public class BooksService {
         return itemsFiltered;
     }
 
-    public List<Book> searchBooks(SearchFieldsDTO searchFields) {
+    public List<Book> searchBooks(UUID userId, SearchFieldsDTO searchFields) {
+        usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
             List<Book> books = booksFromGoogle.stream().map(bookDetailDTO -> new Book(
@@ -163,7 +166,8 @@ public class BooksService {
     ;
 
 
-    public BookDetailDTO getBookDetailsByGoogleId(String googleId) {
+    public BookDetailDTO getBookDetailsByGoogleId(UUID userId, String googleId) {
+        usersService.checkIfUserIsActive(userId);
         try {
             Book found = this.getByGoogleId(googleId);
             return new BookDetailDTO(
