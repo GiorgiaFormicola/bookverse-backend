@@ -3,9 +3,14 @@ package giorgiaformicola.capstone.clients;
 import giorgiaformicola.capstone.exceptions.GoogleBooksException;
 import giorgiaformicola.capstone.payloads.books.GoogleBooksSearchResultDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
+import giorgiaformicola.capstone.payloads.books.SearchFieldsDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class GoogleBooksClient {
@@ -71,17 +76,56 @@ public class GoogleBooksClient {
         throw new GoogleBooksException();
     }
 
-    //SEARCH TEST
-    public GoogleBooksSearchResultDTO searchBooks(String query) {
+    public GoogleBooksSearchResultDTO searchBooks(SearchFieldsDTO searchFields) {
+        String query = buildQuery(searchFields.title(), searchFields.author(), searchFields.publisher(), searchFields.category(), searchFields.isbn());
+        String encodedQuery = UriUtils.encodeQuery(query, StandardCharsets.UTF_8);
+        System.out.println(encodedQuery);
+
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .queryParam("q", query)
+                        .queryParam("q", encodedQuery)
                         .queryParam("maxResults", 40)
                         .queryParam("printType", "books")
                         /*.queryParam("startIndex", page * 20)*/
+                        .queryParam("orderBy", "relevance")
                         .queryParam("key", apiKey)
                         .build())
                 .retrieve()
                 .body(GoogleBooksSearchResultDTO.class);
+    }
+
+    private String buildQuery(String title,
+                              String author,
+                              String publisher,
+                              String category,
+                              String isbn) {
+
+        StringBuilder query = new StringBuilder();
+
+        if (StringUtils.hasText(title)) {
+            query.append("intitle:").append(title).append("+");
+        }
+
+        if (StringUtils.hasText(author)) {
+            query.append("inauthor:").append(author).append("+");
+        }
+
+        if (StringUtils.hasText(publisher)) {
+            query.append("inpublisher:").append(publisher).append("+");
+        }
+
+        if (StringUtils.hasText(category)) {
+            query.append("subject:").append(category).append("+");
+        }
+
+        if (StringUtils.hasText(isbn)) {
+            query.append("isbn:").append(isbn).append("+");
+        }
+
+        if (!query.isEmpty() && query.charAt(query.length() - 1) == '+') {
+            query.deleteCharAt(query.length() - 1);
+        }
+
+        return query.toString();
     }
 }

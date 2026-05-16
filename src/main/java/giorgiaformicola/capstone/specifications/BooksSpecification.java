@@ -93,4 +93,46 @@ public class BooksSpecification {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    public static Specification<Book> filter(
+            String title,
+            String author,
+            String publisher,
+            String category,
+            String isbn10,
+            String isbn13
+    ) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (title != null && !title.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%"));
+            }
+
+            if (author != null && !author.isBlank()) {
+                Join<Book, String> authorsJoin = root.join("authors");
+                predicates.add(cb.like(cb.lower(authorsJoin), "%" + author.toLowerCase() + "%"));
+            }
+
+            if (publisher != null && !publisher.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("publisher")), "%" + publisher.toLowerCase() + "%"));
+            }
+
+            if (isbn10 != null && !isbn10.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("isbn10")), "%" + isbn10.toLowerCase() + "%"));
+            }
+
+            if (isbn13 != null && !isbn13.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("isbn13")), "%" + isbn13.toLowerCase() + "%"));
+            }
+
+            if (category != null && !category.isBlank()) {
+                Join<Book, String> categorysJoin = root.join("categories");
+                predicates.add(cb.like(cb.lower(categorysJoin), "%" + category.toLowerCase() + "%"));
+            }
+
+            query.distinct(true);
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 }

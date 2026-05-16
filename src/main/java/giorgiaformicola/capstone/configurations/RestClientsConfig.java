@@ -14,6 +14,7 @@ public class RestClientsConfig {
                 .requestInterceptor(((request, body, execution) -> {
                     log.info("REQUEST URL: " + request.getURI());
                     log.info("METHOD: " + request.getMethod());
+                    log.info("URI: " + request.getURI());
                     return execution.execute(request, body);
                 }));
     }

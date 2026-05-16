@@ -12,6 +12,7 @@ import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
+import giorgiaformicola.capstone.specifications.BooksSpecification;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,6 +59,7 @@ public class BooksService {
         return this.booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("book", bookId));
     }
 
+    //TODO: rivedi paginazione
     public Page<Book> findAll(Specification<Book> specification, int page, int size, String sortBy, String order) {
         if (page < 0) page = 0;
         if (size < 0 || size > 100) size = 20;
@@ -70,19 +73,20 @@ public class BooksService {
         return this.booksRepository.findAll(specification, pageable);
     }
 
-    public List<BookDetailDTO> searchBooksFromGoogle(String query) {
-        if (query.isBlank()) throw new BadRequestException("You must provide a valid query string");
-        List<BookDetailDTO> itemsFiltered = googleBooksClient.searchBooks(query)
+    public List<BookDetailDTO> searchBooksFromGoogle(SearchFieldsDTO searchFields) {
+        GoogleBooksSearchResultDTO searchResult = googleBooksClient.searchBooks(searchFields);
+        if (searchResult.items() == null) return new ArrayList<BookDetailDTO>();
+        List<BookDetailDTO> itemsFiltered = googleBooksClient.searchBooks(searchFields)
                 .items()
                 .stream()
-                .filter(item -> item != null && item.id() != null && item.volumeInfo() != null).map(item -> BookMapper.mapFromGoogleItemDTO(item)).toList();
-        System.out.println("Items filtered = " + itemsFiltered.size());
+                .filter(item -> item != null && item.id() != null && item.volumeInfo() != null && item.volumeInfo().title() != null)
+                .map(item -> BookMapper.mapFromGoogleItemDTO(item)).toList();
         return itemsFiltered;
     }
 
-    public List<Book> searchBooks(String query) {
+    public List<Book> searchBooks(SearchFieldsDTO searchFields) {
         try {
-            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(query);
+            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
             List<Book> books = booksFromGoogle.stream().map(bookDetailDTO -> new Book(
                     bookDetailDTO.googleId(),
                     bookDetailDTO.title(),
@@ -100,15 +104,23 @@ public class BooksService {
                 try {
                     this.save(book);
                 } catch (BadRequestException ex) {
-                    // skip this book
+                    // skip this book because already exists in the db
                 }
             }
-
             return books;
         } catch (Exception ex) {
-            List<Book> booksFromDBByTitle = booksRepository.findAllByTitleContainsIgnoreCase(query);
-            if (booksFromDBByTitle.isEmpty()) throw new SearchException();
-            return booksFromDBByTitle;
+            Specification<Book> specification = BooksSpecification.filter(
+                    searchFields.title(),
+                    searchFields.author(),
+                    searchFields.category(),
+                    searchFields.isbn(),
+                    searchFields.isbn(),
+                    searchFields.category()
+            );
+
+            List<Book> booksFromDBfiltered = booksRepository.findAll(specification);
+            if (booksFromDBfiltered.isEmpty()) throw new SearchException();
+            return booksFromDBfiltered;
         }
     }
 

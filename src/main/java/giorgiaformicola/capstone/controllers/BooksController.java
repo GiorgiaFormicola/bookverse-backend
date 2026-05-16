@@ -2,10 +2,7 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.books.AuthorsDTO;
-import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
-import giorgiaformicola.capstone.payloads.books.BookInfoDTO;
-import giorgiaformicola.capstone.payloads.books.CategoriesDTO;
+import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.services.BooksService;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import org.springframework.data.domain.Page;
@@ -41,11 +38,17 @@ public class BooksController {
         return booksService.getBookFromAPI(editionId);
     }*/
 
-    //ENDPOINT PER CERCARE LIBRI DA GOOGLE
+    //ENDPOINT PER CERCARE LIBRI DA GOOGLE O DA LIBRERIA
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public List<Book> searchFromAPI(@RequestParam String query) {
-        return booksService.searchBooks(query);
+    public List<Book> searchFromAPI(@RequestParam(required = false) String title,
+                                    @RequestParam(required = false) String author,
+                                    @RequestParam(required = false) String publisher,
+                                    @RequestParam(required = false) String category,
+                                    @RequestParam(required = false) String isbn) {
+        /*BooksSearchQuery searchQuery = new BooksSearchQuery(title, author, publisher, category, isbn);*/
+        SearchFieldsDTO searchFields = new SearchFieldsDTO(title, author, publisher, category, isbn);
+        return booksService.searchBooks(searchFields);
     }
 
 
