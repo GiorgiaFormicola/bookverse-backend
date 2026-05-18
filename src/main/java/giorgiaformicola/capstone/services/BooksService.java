@@ -11,6 +11,7 @@ import giorgiaformicola.capstone.exceptions.SearchException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
+import giorgiaformicola.capstone.repositories.ReviewsRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import giorgiaformicola.capstone.tools.BookMapper;
@@ -33,14 +34,16 @@ public class BooksService {
     private final UserBooksRepository userBooksRepository;
     private final UsersService usersService;
     private final Cloudinary cloudinary;
+    private final ReviewsRepository reviewsRepository;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService) {
+    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService, ReviewsRepository reviewsRepository) {
         this.openLibraryClient = openLibraryClient;
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
         this.userBooksRepository = userBooksRepository;
         this.cloudinary = cloudinary;
         this.usersService = usersService;
+        this.reviewsRepository = reviewsRepository;
     }
 
     public Book findById(UUID bookId) {
@@ -248,6 +251,7 @@ public class BooksService {
     public void findByIdAndDelete(String googleId) {
         Book found = getByGoogleId(googleId);
         userBooksRepository.deleteByBook_Id(found.getId());
+        reviewsRepository.deleteByBook_Id(found.getId());
         booksRepository.delete(found);
     }
 

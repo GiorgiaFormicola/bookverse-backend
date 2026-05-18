@@ -9,6 +9,7 @@ import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.users.*;
+import giorgiaformicola.capstone.repositories.ReviewsRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.repositories.UsersRepository;
 import giorgiaformicola.capstone.security.TokenTools;
@@ -39,14 +40,16 @@ public class UsersService {
     private final Cloudinary cloudinary;
     private final UserBooksRepository userBooksRepository;
     private final EmailSender emailSender;
+    private final ReviewsRepository reviewsRepository;
 
-    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary, UserBooksRepository userBooksRepository, EmailSender emailSender) {
+    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary, UserBooksRepository userBooksRepository, EmailSender emailSender, ReviewsRepository reviewsRepository) {
         this.usersRepository = usersRepository;
         this.bCryptEncoder = bCryptEncoder;
         this.tokenTools = tokenTools;
         this.cloudinary = cloudinary;
         this.userBooksRepository = userBooksRepository;
         this.emailSender = emailSender;
+        this.reviewsRepository = reviewsRepository;
     }
 
     public User save(RegistrationDTO body) {
@@ -173,6 +176,7 @@ public class UsersService {
     public void findByIdAndDelete(UUID userId) {
         User found = this.findById(userId);
         this.userBooksRepository.deleteByUser_Id(found.getId());
+        this.reviewsRepository.deleteByUser_Id(found.getId());
         this.usersRepository.delete(found);
     }
 

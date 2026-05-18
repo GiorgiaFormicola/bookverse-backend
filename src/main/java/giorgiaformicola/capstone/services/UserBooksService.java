@@ -43,9 +43,13 @@ public class UserBooksService {
         return new UserBook(bookFound, userFound);
     }
 
+    public boolean checkBookAlreadySavedByUser(UUID userId, String googleId) {
+        return userBooksRepository.existsByUser_IdAndBook_GoogleId(userId, googleId);
+    }
+
     public UserBook saveBookToUserLibrary(UUID userId, BookDetailDTO body) {
         User userFound = usersService.checkIfUserIsActive(userId);
-        if (userBooksRepository.existsByUser_IdAndBook_GoogleId(userId, body.googleId()))
+        if (checkBookAlreadySavedByUser(userId, body.googleId()))
             throw new BadRequestException("Book already saved in the user " + userId + "library");
         try {
             Book bookFound = booksService.getByGoogleId(body.googleId());

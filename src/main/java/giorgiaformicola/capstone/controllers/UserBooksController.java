@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("me/books")
+@RequestMapping("/me/books")
 public class UserBooksController {
     private final UserBooksService userBooksService;
 
