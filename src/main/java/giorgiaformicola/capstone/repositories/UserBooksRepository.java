@@ -22,5 +22,4 @@ public interface UserBooksRepository extends JpaRepository<UserBook, UUID>, JpaS
     void deleteByUser_Id(UUID userId);
 
     void deleteByBook_Id(UUID bookId);
-
 }
