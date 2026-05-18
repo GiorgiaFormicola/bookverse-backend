@@ -7,6 +7,7 @@ import giorgiaformicola.capstone.clients.OpenLibraryClient;
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
+import giorgiaformicola.capstone.exceptions.SearchException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
@@ -136,7 +137,7 @@ public class BooksService {
             );
 
             List<Book> booksFromDb = booksRepository.findAll(specification);
-            /*if (booksFromDb.isEmpty()) throw new SearchException();*/
+            if (booksFromDb.isEmpty()) throw new SearchException();
             if (sortBy == null || sortBy.isBlank()) sortBy = "title";
             return findAll(specification, page, 10, sortBy, order);
         }

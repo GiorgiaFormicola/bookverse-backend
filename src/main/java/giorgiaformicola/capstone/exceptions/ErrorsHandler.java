@@ -2,6 +2,7 @@ package giorgiaformicola.capstone.exceptions;
 
 import giorgiaformicola.capstone.payloads.errors.ErrorDTO;
 import giorgiaformicola.capstone.payloads.errors.ErrorsListDTO;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -71,11 +72,11 @@ public class ErrorsHandler {
         return new ErrorDTO("Oops, something went wrong with you request", LocalDateTime.now());
     }
 
-    /*@ExceptionHandler(PropertyReferenceException.class)
+    @ExceptionHandler(PropertyReferenceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handlePropertyReferenceException(PropertyReferenceException ex) {
         return new ErrorDTO("Oops, something went wrong with you request", LocalDateTime.now());
-    }*/
+    }
 
     @ExceptionHandler(MultipartException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -83,11 +84,11 @@ public class ErrorsHandler {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }
 
-    /*@ExceptionHandler(SearchException.class)
+    @ExceptionHandler(SearchException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleSearchException(SearchException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
-    }*/
+    }
 
 
     //TODO: handle missing errors
