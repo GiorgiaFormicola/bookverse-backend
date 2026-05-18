@@ -7,7 +7,6 @@ import giorgiaformicola.capstone.clients.OpenLibraryClient;
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
-import giorgiaformicola.capstone.exceptions.SearchException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
@@ -95,13 +94,13 @@ public class BooksService {
                     bookDetailDTO.categories(),
                     bookDetailDTO.coverURL())).toList();
 
-            for (Book book : books) {
+            /*for (Book book : books) {
                 try {
                     this.save(book);
                 } catch (BadRequestException ex) {
                     // skip this book because already exists in the db
                 }
-            }
+            }*/
 
             if (page < 0) page = 0;
 
@@ -136,11 +135,10 @@ public class BooksService {
                     searchFields.category()
             );
 
-            List<Book> booksFromDBfiltered = booksRepository.findAll(specification);
-            if (booksFromDBfiltered.isEmpty()) throw new SearchException();
+            List<Book> booksFromDb = booksRepository.findAll(specification);
+            /*if (booksFromDb.isEmpty()) throw new SearchException();*/
             if (sortBy == null || sortBy.isBlank()) sortBy = "title";
-            Page<Book> booksFromDBPagedAndFiltered = findAll(specification, page, 10, sortBy, order);
-            return booksFromDBPagedAndFiltered;
+            return findAll(specification, page, 10, sortBy, order);
         }
     }
 

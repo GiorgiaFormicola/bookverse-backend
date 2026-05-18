@@ -2,12 +2,16 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.entities.UserBook;
+import giorgiaformicola.capstone.enums.StatusType;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.BookStatusDTO;
 import giorgiaformicola.capstone.payloads.books.BookVisibilityDTO;
 import giorgiaformicola.capstone.payloads.books.UserLibraryBookDTO;
 import giorgiaformicola.capstone.services.UserBooksService;
+import giorgiaformicola.capstone.specifications.UserBooksSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,8 +34,31 @@ public class UserBooksController {
     //TODO: migliora paginazione
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public List<UserLibraryBookDTO> getMyBooks(@AuthenticationPrincipal User currentAuthenticatedUser) {
-        return userBooksService.findUserBooks(currentAuthenticatedUser.getId());
+    public Page<UserLibraryBookDTO> getMyBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                               @RequestParam(required = false) String title,
+                                               @RequestParam(required = false) String author,
+                                               @RequestParam(required = false) String publisher,
+                                               @RequestParam(required = false) String category,
+                                               @RequestParam(required = false) String isbn,
+                                               @RequestParam(required = false) Boolean isPublic,
+                                               @RequestParam(required = false) StatusType status,
+                                               @RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "20") int size,
+                                               @RequestParam(defaultValue = "title") String sortBy,
+                                               @RequestParam(defaultValue = "asc") String order
+    ) {
+        Specification<UserBook> specification = UserBooksSpecification.filter(
+                currentAuthenticatedUser.getId(),
+                title,
+                author,
+                publisher,
+                isbn,
+                isbn,
+                category,
+                isPublic,
+                status
+        );
+        return userBooksService.findUserBooks(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }
 
     /*@GetMapping

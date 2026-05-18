@@ -1,7 +1,7 @@
 package giorgiaformicola.capstone.exceptions;
 
-public class GoogleBooksException extends RuntimeException {
-    public GoogleBooksException() {
+public class GoogleBooksSearchException extends RuntimeException {
+    public GoogleBooksSearchException() {
         super("Oops, some errors occurred. Try again later!");
     }
 }

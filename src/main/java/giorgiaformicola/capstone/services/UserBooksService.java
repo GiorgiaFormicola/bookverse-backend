@@ -12,9 +12,13 @@ import giorgiaformicola.capstone.payloads.books.BookVisibilityDTO;
 import giorgiaformicola.capstone.payloads.books.UserLibraryBookDTO;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.repositories.UsersRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -54,10 +58,26 @@ public class UserBooksService {
         }
     }
 
-    public List<UserLibraryBookDTO> findUserBooks(UUID userId) {
-        User found = usersService.checkIfUserIsActive(userId);
-        List<UserBook> results = userBooksRepository.findUserBookByUser_Id(found.getId());
-        return results.stream().map(result -> new UserLibraryBookDTO(result.getBook(), result.getId(), result.isPublic(), result.getStatus())).toList();
+    public Page<UserLibraryBookDTO> findUserBooks(UUID userId, Specification<UserBook> specification, int page, int size, String sortBy, String order) {
+        usersService.checkIfUserIsActive(userId);
+        /*List<UserBook> results = userBooksRepository.findUserBookByUser_Id(found.getId());*/
+        if (page < 0) page = 0;
+        if (size < 0 || size > 100) size = 20;
+        String orderCriteria = switch (sortBy) {
+            case "publisher" -> "book.publisher";
+            case "pages" -> "book.pages";
+            default -> "book.title";
+        };
+
+        Pageable pageable = switch (order) {
+            case "asc" -> PageRequest.of(page, size, Sort.by(orderCriteria));
+            case "desc" -> PageRequest.of(page, size, Sort.by(orderCriteria).reverse());
+            default -> PageRequest.of(page, size, Sort.by(orderCriteria));
+        };
+
+        Page<UserBook> results = userBooksRepository.findAll(specification, pageable);
+        return results.map(userBook -> new UserLibraryBookDTO(userBook.getBook(), userBook.getId(), userBook.isPublic(), userBook.getStatus()));
+        /*return results.stream().map(result -> new UserLibraryBookDTO(result.getBook(), result.getId(), result.isPublic(), result.getStatus())).toList();*/
     }
 
     public UserBook updateBookVisibilityFromUserLibrary(UUID userId, String googleId, BookVisibilityDTO body) {

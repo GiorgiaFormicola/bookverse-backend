@@ -69,8 +69,8 @@ public class BooksSpecification {
             if (Boolean.TRUE.equals(missingCategory)) {
                 predicates.add(cb.isEmpty(root.get("categories")));
             } else if (category != null && !category.isBlank()) {
-                Join<Book, String> categorysJoin = root.join("categories");
-                predicates.add(cb.like(cb.lower(categorysJoin), "%" + category.toLowerCase() + "%"));
+                Join<Book, String> categoriesJoin = root.join("categories");
+                predicates.add(cb.like(cb.lower(categoriesJoin), "%" + category.toLowerCase() + "%"));
             }
 
             if (Boolean.TRUE.equals(missingPublishedDate)) {
@@ -127,8 +127,8 @@ public class BooksSpecification {
             }
 
             if (category != null && !category.isBlank()) {
-                Join<Book, String> categorysJoin = root.join("categories");
-                predicates.add(cb.like(cb.lower(categorysJoin), "%" + category.toLowerCase() + "%"));
+                Join<Book, String> categoriesJoin = root.join("categories");
+                predicates.add(cb.like(cb.lower(categoriesJoin), "%" + category.toLowerCase() + "%"));
             }
 
             query.distinct(true);

@@ -1,6 +1,6 @@
 package giorgiaformicola.capstone.clients;
 
-import giorgiaformicola.capstone.exceptions.GoogleBooksException;
+import giorgiaformicola.capstone.exceptions.GoogleBooksSearchException;
 import giorgiaformicola.capstone.payloads.books.GoogleBooksSearchResultDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.payloads.books.SearchFieldsDTO;
@@ -8,9 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.util.UriUtils;
-
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class GoogleBooksClient {
@@ -23,7 +20,9 @@ public class GoogleBooksClient {
 
     }
 
-    /*public GoogleBooksSearchResultDTO searchBooks(String query) {
+    public GoogleBooksSearchResultDTO searchBooks(SearchFieldsDTO searchFields) {
+        String query = buildQuery(searchFields.title(), searchFields.author(), searchFields.publisher(), searchFields.category(), searchFields.isbn());
+        /*String encodedQuery = UriUtils.encodeQuery(query, StandardCharsets.UTF_8);*/
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
@@ -32,7 +31,8 @@ public class GoogleBooksClient {
                                 .queryParam("q", query)
                                 .queryParam("maxResults", 40)
                                 .queryParam("printType", "books")
-                                *//*.queryParam("startIndex", page * 20)*//*
+                                /*.queryParam("startIndex", page * 20)*/
+                                .queryParam("orderBy", "relevance")
                                 .queryParam("key", apiKey)
                                 .build())
                         .retrieve()
@@ -48,8 +48,8 @@ public class GoogleBooksClient {
                 }
             }
         }
-        throw new GoogleBooksException();
-    }*/
+        throw new GoogleBooksSearchException();
+    }
 
     public GoogleItemDTO searchBookByGoogleId(String bookId) {
         int maxAttempts = 3;
@@ -73,25 +73,7 @@ public class GoogleBooksClient {
                 }
             }
         }
-        throw new GoogleBooksException();
-    }
-
-    public GoogleBooksSearchResultDTO searchBooks(SearchFieldsDTO searchFields) {
-        String query = buildQuery(searchFields.title(), searchFields.author(), searchFields.publisher(), searchFields.category(), searchFields.isbn());
-        String encodedQuery = UriUtils.encodeQuery(query, StandardCharsets.UTF_8);
-        System.out.println(encodedQuery);
-
-        return restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("q", encodedQuery)
-                        .queryParam("maxResults", 40)
-                        .queryParam("printType", "books")
-                        /*.queryParam("startIndex", page * 20)*/
-                        .queryParam("orderBy", "relevance")
-                        .queryParam("key", apiKey)
-                        .build())
-                .retrieve()
-                .body(GoogleBooksSearchResultDTO.class);
+        throw new GoogleBooksSearchException();
     }
 
     private String buildQuery(String title,
