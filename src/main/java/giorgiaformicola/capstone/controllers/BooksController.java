@@ -47,7 +47,7 @@ public class BooksController {
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
     @GetMapping("/search/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public BookDetailDTO getBookDetails(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
+    public BookDetailDTO getBookDetailsFromGoogleOrDb(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
         return booksService.getBookDetailsByGoogleId(currentAuthenticatedUser.getId(), googleId);
     }
 

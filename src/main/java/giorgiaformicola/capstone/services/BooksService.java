@@ -154,7 +154,12 @@ public class BooksService {
 
     public Book save(BookDetailDTO body) {
         if (booksRepository.existsByGoogleId(body.googleId()))
-            throw new BadRequestException("Book already saved in the database");
+            throw new BadRequestException("Book with google id " + body.googleId() + " already saved in the database");
+        if (body.isbn10() != null && booksRepository.existsByIsbn10(body.isbn10()))
+            throw new BadRequestException("Book with ISBN-10 " + body.isbn10() + " already saved in the database");
+        if (body.isbn13() != null && booksRepository.existsByIsbn13(body.isbn13()))
+            throw new BadRequestException("Book with ISBN-13 " + body.isbn13() + " already saved in the database");
+
         Book newBook = new Book(
                 body.googleId(),
                 body.title(),
@@ -173,6 +178,10 @@ public class BooksService {
     public Book save(Book book) {
         if (booksRepository.existsByGoogleId(book.getGoogleId()))
             throw new BadRequestException("Book already saved in the database");
+        if (book.getIsbn10() != null && booksRepository.existsByIsbn10(book.getIsbn10()))
+            throw new BadRequestException("Book with ISBN-10 " + book.getIsbn10() + " already saved in the database");
+        if (book.getIsbn13() != null && booksRepository.existsByIsbn13(book.getIsbn13()))
+            throw new BadRequestException("Book with ISBN-13 " + book.getIsbn13() + " already saved in the database");
         return booksRepository.save(book);
     }
 
