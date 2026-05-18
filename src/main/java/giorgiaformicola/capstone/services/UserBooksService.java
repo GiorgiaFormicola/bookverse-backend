@@ -6,6 +6,7 @@ import giorgiaformicola.capstone.entities.UserBook;
 import giorgiaformicola.capstone.enums.StatusType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
+import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.books.BookStatusDTO;
 import giorgiaformicola.capstone.payloads.books.BookVisibilityDTO;
@@ -64,7 +65,6 @@ public class UserBooksService {
 
     public Page<UserLibraryBookDTO> findUserBooks(UUID userId, Specification<UserBook> specification, int page, int size, String sortBy, String order) {
         usersService.checkIfUserIsActive(userId);
-        /*List<UserBook> results = userBooksRepository.findUserBookByUser_Id(found.getId());*/
         if (page < 0) page = 0;
         if (size < 0 || size > 100) size = 20;
         String orderCriteria = switch (sortBy) {
@@ -81,10 +81,11 @@ public class UserBooksService {
 
         Page<UserBook> results = userBooksRepository.findAll(specification, pageable);
         return results.map(userBook -> new UserLibraryBookDTO(userBook.getBook(), userBook.getId(), userBook.isPublic(), userBook.getStatus()));
-        /*return results.stream().map(result -> new UserLibraryBookDTO(result.getBook(), result.getId(), result.isPublic(), result.getStatus())).toList();*/
     }
 
     public UserBook updateBookVisibilityFromUserLibrary(UUID userId, String googleId, BookVisibilityDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         if (found.isPublic() == body.isPublic())
@@ -94,6 +95,8 @@ public class UserBooksService {
     }
 
     public UserBook updateBookStatusFromUserLibrary(UUID userId, String googleId, BookStatusDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         if (found.getStatus().equals(StatusType.valueOf(body.status())))
@@ -103,6 +106,8 @@ public class UserBooksService {
     }
 
     public void deleteBookFromUserLibrary(UUID userId, String googleId) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         userBooksRepository.delete(found);

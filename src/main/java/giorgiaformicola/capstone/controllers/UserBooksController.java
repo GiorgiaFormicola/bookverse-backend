@@ -31,7 +31,6 @@ public class UserBooksController {
     }
 
     //ENDPOINT PER OTTENERE I LIBRI NELLA LA MIA LIBRERIA
-    //TODO: migliora paginazione
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Page<UserLibraryBookDTO> getMyBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
@@ -60,12 +59,6 @@ public class UserBooksController {
         );
         return userBooksService.findUserBooks(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }
-
-    /*@GetMapping
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public List<String> getMyBooksIds(@AuthenticationPrincipal User currentAuthenticatedUser) {
-        return userBooksService.findUserBooksIds(currentAuthenticatedUser.getId());
-    }*/
 
     //ENDPOINT PER SALVARE LIBRO NEL DB SE NON ESISTE GIA' ED POI AGGIUNGERLO ALLA LIBRERIA UTENTE
     @PostMapping

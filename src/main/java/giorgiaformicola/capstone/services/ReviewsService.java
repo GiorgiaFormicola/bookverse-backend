@@ -7,6 +7,7 @@ import giorgiaformicola.capstone.enums.RoleType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
+import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.reviews.ReviewDTO;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,8 @@ public class ReviewsService {
     }
 
     public Review save(UUID userId, String googleId, ReviewDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
         Book bookFound = booksService.getByGoogleId(googleId);
         if (reviewsRepository.existsByUser_IdAndBook_GoogleId(userFound.getId(), bookFound.getGoogleId()))

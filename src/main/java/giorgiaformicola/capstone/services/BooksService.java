@@ -71,7 +71,7 @@ public class BooksService {
 
     public List<BookDetailDTO> searchBooksFromGoogle(SearchFieldsDTO searchFields) {
         GoogleBooksSearchResultDTO searchResult = googleBooksClient.searchBooks(searchFields);
-        if (searchResult.items() == null) return new ArrayList<BookDetailDTO>();
+        if (searchResult.items() == null) return new ArrayList<>();
         List<BookDetailDTO> itemsFiltered = googleBooksClient.searchBooks(searchFields)
                 .items()
                 .stream()
@@ -81,7 +81,6 @@ public class BooksService {
     }
 
     public Page<Book> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
-        System.out.println(sortBy);
         usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
@@ -147,7 +146,7 @@ public class BooksService {
     }
 
     public BookDetailDTO searchBookByIdFromGoogle(String googleId) {
-        if (googleId == null || googleId.isBlank()) throw new BadRequestException("You must provide a valid id");
+        if (googleId == null || googleId.isBlank()) throw new ValidationException("You must provide a valid google id");
         GoogleItemDTO bookFromGoogle = googleBooksClient.searchBookByGoogleId(googleId);
         return BookMapper.mapFromGoogleItemDTO(bookFromGoogle);
     }
@@ -187,11 +186,13 @@ public class BooksService {
 
     public Book getByGoogleId(String googleId) {
         if (googleId == null || googleId.isBlank())
-            throw new BadRequestException("You must provide a valid id");
+            throw new ValidationException("You must provide a valid google id");
         return booksRepository.findByGoogleId(googleId).orElseThrow(() -> new NotFoundException("book", googleId));
     }
 
     public BookDetailDTO getBookDetailsByGoogleId(UUID userId, String googleId) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         usersService.checkIfUserIsActive(userId);
         try {
             Book found = this.getByGoogleId(googleId);
@@ -213,6 +214,8 @@ public class BooksService {
     }
 
     public Book findByIdAndUpdateBookInfo(String googleId, BookInfoDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         Book found = getByGoogleId(googleId);
         if (body.title() != null && !body.title().isBlank()) {
             found.setTitle(body.title().trim());
@@ -242,6 +245,8 @@ public class BooksService {
     }
 
     public Book findByIdAndUpdateBookCover(String googleId, MultipartFile file) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         if (file.getContentType() == null || !file.getContentType().startsWith("image/") || file.isEmpty())
             throw new ValidationException("Invalid type of file provided");
         if (file.getSize() > 2 * 1024 * 1024)
@@ -258,6 +263,8 @@ public class BooksService {
 
     @Transactional
     public void findByIdAndDelete(String googleId) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         Book found = getByGoogleId(googleId);
         userBooksRepository.deleteByBook_Id(found.getId());
         reviewsRepository.deleteByBook_Id(found.getId());
@@ -266,6 +273,8 @@ public class BooksService {
 
     @Transactional
     public Book findByIdAndUpdateBookAuthors(String googleId, AuthorsDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         Book found = getByGoogleId(googleId);
         found.setAuthors(body.authors());
         return booksRepository.save(found);
@@ -273,6 +282,8 @@ public class BooksService {
 
     @Transactional
     public Book findByIdAndUpdateBookCategories(String googleId, CategoriesDTO body) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         Book found = getByGoogleId(googleId);
         found.setCategories(body.categories());
         return booksRepository.save(found);

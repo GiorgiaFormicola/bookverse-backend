@@ -71,7 +71,7 @@ public class UsersService {
     public User checkIfUserIsActive(UUID userId) {
         User found = findById(userId);
         if (!found.isActive())
-            throw new BadRequestException("Your account has been deactivated. Send us an email to check what happened.");
+            throw new UnauthorizedException("Your account has been deactivated. Send us an email to check what happened.");
         return found;
     }
 
@@ -153,7 +153,7 @@ public class UsersService {
     }
 
     public User findByIdAndUpdateRole(UUID adminId, UUID userId, UserRoleDTO body) {
-        if (adminId.equals(userId)) throw new BadRequestException("You can't update you own role");
+        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update you own role");
         User found = this.findById(userId);
         if (found.getRole().name().equals(body.role()))
             throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
@@ -162,7 +162,7 @@ public class UsersService {
     }
 
     public User findByIdAndUpdateStatus(UUID adminId, UUID userId, UserStatusDTO body) {
-        if (adminId.equals(userId)) throw new BadRequestException("You can't update you own status");
+        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update you own status");
         User found = this.findById(userId);
         if (found.getRole().equals(RoleType.ADMIN))
             throw new BadRequestException("You can't change the status of an ADMIN");

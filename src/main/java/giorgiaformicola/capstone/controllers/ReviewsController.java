@@ -3,6 +3,7 @@ package giorgiaformicola.capstone.controllers;
 import giorgiaformicola.capstone.entities.Review;
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
+import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.reviews.ReviewDTO;
 import giorgiaformicola.capstone.services.ReviewsService;
 import giorgiaformicola.capstone.specifications.ReviewsSpecification;
@@ -56,6 +57,8 @@ public class ReviewsController {
                                        @RequestParam(defaultValue = "createdAt") String sortBy,
                                        @RequestParam(defaultValue = "desc") String order
     ) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         Specification<Review> specification = ReviewsSpecification.filter(
                 googleId,
                 null,
