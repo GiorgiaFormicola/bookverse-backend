@@ -8,6 +8,7 @@ import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
 import giorgiaformicola.capstone.exceptions.ValidationException;
+import giorgiaformicola.capstone.payloads.books.LibraryBookDTO;
 import giorgiaformicola.capstone.payloads.users.*;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
@@ -77,8 +78,8 @@ public class UsersService {
 
     public UserProfileDTO getUserProfileById(UUID userId) {
         User found = findById(userId);
-        List<String> booksIds = userBooksRepository.findUserBookByUser_Id(userId).stream().map(result -> result.getBook().getGoogleId()).toList();
-        return new UserProfileDTO(found, booksIds);
+        List<LibraryBookDTO> books = userBooksRepository.findUserBookByUser_Id(userId).stream().map(result -> new LibraryBookDTO(result.getBook().getGoogleId(), result.isPublic(), result.getStatus())).toList();
+        return new UserProfileDTO(found, books);
     }
 
 

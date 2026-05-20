@@ -37,10 +37,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(@Value("${localhost.port}") String port) {
+    public CorsConfigurationSource corsConfigurationSource(@Value("${localhost.port}") String port, @Value("${server.address}") String address) {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:" + port));
+        configuration.setAllowedOrigins(List.of("http://localhost:" + port, "http://" + address + ":" + port));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
 
