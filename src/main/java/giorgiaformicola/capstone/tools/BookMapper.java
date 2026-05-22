@@ -30,10 +30,20 @@ public class BookMapper {
 
         for (String cover : covers) {
             if (cover != null && !cover.isBlank()) {
-                return cover;
+                return toHttps(cover);
             }
         }
         return null;
+    }
+
+    private static String toHttps(String url) {
+        if (url == null) return null;
+
+        if (url.startsWith("http://")) {
+            return "https://" + url.substring(7);
+        }
+
+        return url;
     }
 
     private static String cleanDescription(String description) {
