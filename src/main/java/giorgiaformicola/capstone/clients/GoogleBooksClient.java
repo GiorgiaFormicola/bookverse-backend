@@ -7,6 +7,9 @@ import giorgiaformicola.capstone.payloads.books.SearchFieldsDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 @Component
@@ -36,19 +39,37 @@ public class GoogleBooksClient {
                                 .queryParam("key", apiKey)
                                 .build())
                         .retrieve()
+                        .onStatus(status -> status.isError(), (req, res) -> {
+                            System.out.println("Google error status: " + res.getStatusCode());
+                            System.out.println("Body: " + new String(res.getBody().readAllBytes()));
+                        })
                         .body(GoogleBooksSearchResultDTO.class);
-            } catch (Exception e) {
+            } catch (HttpServerErrorException | ResourceAccessException e) {
+                e.printStackTrace();
+
+                System.out.println(e.getMessage());
+
                 if (attempt == maxAttempts) {
-                    throw e;
+                    throw new GoogleBooksSearchException("Google Books unavailable after retries", e);
                 }
                 try {
                     Thread.sleep(10000 * attempt);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
+            } catch (HttpClientErrorException e) {
+                System.err.println("Google Books client error (non retryable)");
+                System.err.println("Status: " + e.getStatusCode());
+                System.err.println("Body: " + e.getResponseBodyAsString());
+                throw new GoogleBooksSearchException("Google Books request invalid", e);
+            } catch (Exception e) {
+                System.err.println("Unexpected error while calling Google Books");
+                e.printStackTrace();
+
+                throw new GoogleBooksSearchException("Unexpected error", e);
             }
         }
-        throw new GoogleBooksSearchException();
+        throw new GoogleBooksSearchException("Unexpected fallback error");
     }
 
     public GoogleItemDTO searchBookByGoogleId(String bookId) {
@@ -62,18 +83,32 @@ public class GoogleBooksClient {
                                 .build())
                         .retrieve()
                         .body(GoogleItemDTO.class);
-            } catch (Exception e) {
+            } catch (HttpServerErrorException | ResourceAccessException e) {
+                e.printStackTrace();
+
+                System.out.println(e.getMessage());
+
                 if (attempt == maxAttempts) {
-                    throw e;
+                    throw new GoogleBooksSearchException("Google Books unavailable after retries", e);
                 }
                 try {
                     Thread.sleep(10000 * attempt);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
+            } catch (HttpClientErrorException e) {
+                System.err.println("Google Books client error (non retryable)");
+                System.err.println("Status: " + e.getStatusCode());
+                System.err.println("Body: " + e.getResponseBodyAsString());
+                throw new GoogleBooksSearchException("Google Books request invalid", e);
+            } catch (Exception e) {
+                System.err.println("Unexpected error while calling Google Books");
+                e.printStackTrace();
+
+                throw new GoogleBooksSearchException("Unexpected error", e);
             }
         }
-        throw new GoogleBooksSearchException();
+        throw new GoogleBooksSearchException("Unexpected fallback error");
     }
 
     private String buildQuery(String title,

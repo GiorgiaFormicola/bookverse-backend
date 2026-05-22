@@ -30,19 +30,18 @@ public class BooksController {
     //ENDPOINT PER CERCARE LIBRI DA GOOGLE O DA LIBRERIA
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public Page<Book> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
-                                  @RequestParam(required = false) String title,
-                                  @RequestParam(required = false) String author,
-                                  @RequestParam(required = false) String publisher,
-                                  @RequestParam(required = false) String category,
-                                  @RequestParam(required = false) String isbn,
-                                  @RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(required = false) String sortBy,
-                                  @RequestParam(defaultValue = "asc") String order) {
+    public Page<BookDetailDTO> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                           @RequestParam(required = false) String title,
+                                           @RequestParam(required = false) String author,
+                                           @RequestParam(required = false) String publisher,
+                                           @RequestParam(required = false) String category,
+                                           @RequestParam(required = false) String isbn,
+                                           @RequestParam(defaultValue = "0") int page,
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(defaultValue = "asc") String order) {
         SearchFieldsDTO searchFields = new SearchFieldsDTO(title, author, publisher, category, isbn);
         return booksService.searchBooks(currentAuthenticatedUser.getId(), searchFields, page, sortBy, order);
     }
-
 
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
     @GetMapping("/search/{googleId}")
