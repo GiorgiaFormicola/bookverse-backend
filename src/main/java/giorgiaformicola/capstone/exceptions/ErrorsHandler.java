@@ -85,7 +85,7 @@ public class ErrorsHandler {
     }
 
     @ExceptionHandler(SearchException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handleSearchException(SearchException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
     }

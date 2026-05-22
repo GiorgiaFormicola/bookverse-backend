@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 public class BookMapper {
-    private static final String defaultCover = "https://neelkanthpublishers.com/assets/bookcover_cover.png";
+    /*private static final String defaultCover = "https://neelkanthpublishers.com/assets/bookcover_cover.png";*/
 
     private static String extractIdentifier(List<GoogleVolumeIdentifierDTO> identifiersList, String identifierType) {
         if (identifiersList == null) return null;
@@ -18,7 +18,7 @@ public class BookMapper {
     }
 
     private static String extractCover(GoogleVolumeImageLinksDTO coverURLS) {
-        if (coverURLS == null) return defaultCover;
+        if (coverURLS == null) return null;
         String[] covers = {
                 coverURLS.extraLarge(),
                 coverURLS.large(),
@@ -33,7 +33,7 @@ public class BookMapper {
                 return cover;
             }
         }
-        return defaultCover;
+        return null;
     }
 
     private static String cleanDescription(String description) {
@@ -60,5 +60,23 @@ public class BookMapper {
                 normalizeStringCollection(body.volumeInfo().categories()),
                 extractCover(body.volumeInfo().coverURLS())
         );
+    }
+
+    public static int score(BookDetailDTO book) {
+        int score = 0;
+        if (book.title() != null) score += 1;
+        if (book.authors() != null && !book.authors().isEmpty()) score += 1;
+        if (book.publisher() != null) score += 1;
+        if (book.publishedDate() != null) score += 1;
+        if (book.description() != null) score += 2;
+        if (book.isbn10() != null || book.isbn13() != null) score += 2;
+        if (book.pages() != null) score += 1;
+        if (book.categories() != null && !book.categories().isEmpty()) score += 1;
+        if (book.coverURL() != null) score += 2;
+        return score;
+    }
+
+    public static BookDetailDTO returnBest(BookDetailDTO a, BookDetailDTO b) {
+        return score(a) >= score(b) ? a : b;
     }
 }

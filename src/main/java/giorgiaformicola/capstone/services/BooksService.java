@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -73,7 +75,12 @@ public class BooksService {
                 .items()
                 .stream()
                 .filter(item -> item != null && item.id() != null && item.volumeInfo() != null && item.volumeInfo().title() != null)
-                .map(item -> BookMapper.mapFromGoogleItemDTO(item)).toList();
+                .map(item -> BookMapper.mapFromGoogleItemDTO(item))
+                .collect(Collectors.toMap(BookDetailDTO::googleId, Function.identity(), BookMapper::returnBest))
+                .values()
+                .stream()
+                .sorted(Comparator.comparingInt(BookMapper::score).reversed())
+                .toList();
         return itemsFiltered;
     }
 
@@ -167,7 +174,7 @@ public class BooksService {
                 }
             }
 
-            Pageable pageable = PageRequest.of(page, 10);
+            Pageable pageable = PageRequest.of(page, 40);
 
             int start = Math.min((int) pageable.getOffset(), booksFromGoogle.size());
             int end = Math.min(start + pageable.getPageSize(), booksFromGoogle.size());
@@ -186,7 +193,7 @@ public class BooksService {
             List<Book> booksFromDb = booksRepository.findAll(specification);
             if (booksFromDb.isEmpty()) throw new SearchException();
             if (sortBy == null || sortBy.isBlank()) sortBy = "title";
-            Page<Book> booksPage = findAll(specification, page, 10, sortBy, order);
+            Page<Book> booksPage = findAll(specification, page, 40, sortBy, order);
 
             return booksPage.map(book -> new BookDetailDTO(
                     book.getGoogleId(),
