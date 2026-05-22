@@ -28,7 +28,7 @@ public class BooksController {
     }
 
     //ENDPOINT PER CERCARE LIBRI DA GOOGLE O DA LIBRERIA
-    @GetMapping("/search")
+    /*@GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Page<BookDetailDTO> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
                                            @RequestParam(required = false) String title,
@@ -41,6 +41,20 @@ public class BooksController {
                                            @RequestParam(defaultValue = "asc") String order) {
         SearchFieldsDTO searchFields = new SearchFieldsDTO(title, author, publisher, category, isbn);
         return booksService.searchBooks(currentAuthenticatedUser.getId(), searchFields, page, sortBy, order);
+    }*/
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public List<BookDetailDTO> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
+                                           @RequestParam(required = false) String title,
+                                           @RequestParam(required = false) String author,
+                                           @RequestParam(required = false) String publisher,
+                                           @RequestParam(required = false) String category,
+                                           @RequestParam(required = false) String isbn,
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(defaultValue = "asc") String order) {
+        SearchFieldsDTO searchFields = new SearchFieldsDTO(title, author, publisher, category, isbn);
+        return booksService.searchBooks(currentAuthenticatedUser.getId(), searchFields, sortBy, order);
     }
 
     //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE

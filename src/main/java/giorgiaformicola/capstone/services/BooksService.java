@@ -13,7 +13,10 @@ import giorgiaformicola.capstone.repositories.UserBooksRepository;
 import giorgiaformicola.capstone.specifications.BooksSpecification;
 import giorgiaformicola.capstone.tools.BookMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,7 +153,7 @@ public class BooksService {
         }
     }*/
 
-    public Page<BookDetailDTO> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
+    /*public Page<BookDetailDTO> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
         usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
@@ -208,6 +211,88 @@ public class BooksService {
                     book.getCategories(),
                     book.getCoverURL())
             );
+        }
+    }*/
+
+    public List<BookDetailDTO> searchBooks(UUID userId, SearchFieldsDTO searchFields, String sortBy, String order) {
+        usersService.checkIfUserIsActive(userId);
+        try {
+            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
+
+            Comparator<BookDetailDTO> comparator = switch (sortBy == null ? "" : sortBy) {
+                case "title" ->
+                        Comparator.comparing(BookDetailDTO::title, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+                case "publisher" ->
+                        Comparator.comparing(BookDetailDTO::publisher, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+                case "pages" ->
+                        Comparator.comparing(BookDetailDTO::pages, Comparator.nullsLast(Comparator.naturalOrder()));
+                default -> null;
+            };
+
+            if ("desc".equalsIgnoreCase(order)) {
+                if (comparator != null) {
+                    booksFromGoogle = booksFromGoogle.stream().sorted(comparator.reversed()).toList();
+                }
+            } else {
+                if (comparator != null) {
+                    booksFromGoogle = booksFromGoogle.stream().sorted(comparator).toList();
+                }
+            }
+
+            return booksFromGoogle;
+        } catch (GoogleBooksSearchException ex) {
+            Specification<Book> specification = BooksSpecification.filter(
+                    searchFields.title(),
+                    searchFields.author(),
+                    searchFields.publisher(),
+                    searchFields.isbn(),
+                    searchFields.isbn(),
+                    searchFields.category()
+            );
+
+            /* if(order.equalsIgnoreCase("desc"))*/
+            Pageable pageable = PageRequest.of(0, 40, Sort.by("title"));
+
+            Page<Book> booksPage = booksRepository.findAll(specification, pageable);
+            List<Book> booksFromDb = booksPage.getContent();
+            if (booksFromDb.isEmpty()) throw new SearchException();
+            /*if (sortBy == null || sortBy.isBlank()) sortBy = "title";*/
+            List<BookDetailDTO> booksMapped = booksFromDb.stream().map(book -> new BookDetailDTO(
+                    book.getGoogleId(),
+                    book.getTitle(),
+                    book.getAuthors(),
+                    book.getPublisher(),
+                    book.getPublishedDate(),
+                    book.getDescription(),
+                    book.getIsbn10(),
+                    book.getIsbn13(),
+                    book.getPages(),
+                    book.getCategories(),
+                    book.getCoverURL())
+            ).toList();
+
+            Comparator<BookDetailDTO> comparator = switch (sortBy == null || sortBy.isBlank() ? "title" : sortBy) {
+                case "publisher" ->
+                        Comparator.comparing(BookDetailDTO::publisher, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+                case "pages" ->
+                        Comparator.comparing(BookDetailDTO::pages, Comparator.nullsLast(Comparator.naturalOrder()));
+                default ->
+                        Comparator.comparing(BookDetailDTO::title, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            };
+
+            if ("desc".equalsIgnoreCase(order)) {
+                if (comparator != null) {
+                    booksMapped = booksMapped.stream().sorted(comparator.reversed()).toList();
+                }
+            } else {
+                if (comparator != null) {
+                    booksMapped = booksMapped.stream().sorted(comparator).toList();
+                }
+            }
+
+            return booksMapped;
+
+
         }
     }
 
