@@ -174,7 +174,7 @@ public class BooksService {
                 }
             }
 
-            Pageable pageable = PageRequest.of(page, 40);
+            Pageable pageable = PageRequest.of(page, 10);
 
             int start = Math.min((int) pageable.getOffset(), booksFromGoogle.size());
             int end = Math.min(start + pageable.getPageSize(), booksFromGoogle.size());
@@ -193,7 +193,7 @@ public class BooksService {
             List<Book> booksFromDb = booksRepository.findAll(specification);
             if (booksFromDb.isEmpty()) throw new SearchException();
             if (sortBy == null || sortBy.isBlank()) sortBy = "title";
-            Page<Book> booksPage = findAll(specification, page, 40, sortBy, order);
+            Page<Book> booksPage = findAll(specification, page, 10, sortBy, order);
 
             return booksPage.map(book -> new BookDetailDTO(
                     book.getGoogleId(),
