@@ -50,7 +50,7 @@ public class ReviewsService {
         Review reviewToSave = new Review(body.rating(), body.comment(), bookToReview, userFound);
         return reviewsRepository.save(reviewToSave);
     }
-    
+
 /*
     public Review save(UUID userId, String googleId, ReviewDTO body) {
         if (googleId == null || googleId.isBlank())

@@ -66,7 +66,7 @@ public class User implements UserDetails {
         this.password = password;
         this.displayName = displayName;
         this.birthdate = birthdate;
-        this.profilePictureURL = "https://picsum.photos/id/24/300/300";
+        this.profilePictureURL = "https://res.cloudinary.com/giorgiaf/image/upload/q_auto/f_auto/v1779695172/anonymous_user_d1sjpz.png";
         this.bio = "";
         this.role = RoleType.USER;
         this.active = true;
