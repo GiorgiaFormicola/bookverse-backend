@@ -7,7 +7,7 @@ import giorgiaformicola.capstone.enums.RoleType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
-import giorgiaformicola.capstone.exceptions.ValidationException;
+import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.reviews.ReviewDTO;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
 import org.springframework.data.domain.Page;
@@ -37,6 +37,22 @@ public class ReviewsService {
     }
 
     public Review save(UUID userId, String googleId, ReviewDTO body) {
+        User userFound = usersService.checkIfUserIsActive(userId);
+        Book bookToReview;
+        try {
+            bookToReview = booksService.getByGoogleId(googleId);
+        } catch (NotFoundException ex) {
+            BookDetailDTO bookFromGoogle = booksService.searchBookByIdFromGoogle(googleId);
+            bookToReview = booksService.save(bookFromGoogle);
+        }
+        if (reviewsRepository.existsByUser_IdAndBook_GoogleId(userFound.getId(), bookToReview.getGoogleId()))
+            throw new BadRequestException("The review for the book with id " + bookToReview.getGoogleId() + " made by the user " + userFound.getId() + " already exists!");
+        Review reviewToSave = new Review(body.rating(), body.comment(), bookToReview, userFound);
+        return reviewsRepository.save(reviewToSave);
+    }
+    
+/*
+    public Review save(UUID userId, String googleId, ReviewDTO body) {
         if (googleId == null || googleId.isBlank())
             throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
@@ -46,6 +62,7 @@ public class ReviewsService {
         Review reviewToSave = new Review(body.rating(), body.comment(), bookFound, userFound);
         return reviewsRepository.save(reviewToSave);
     }
+*/
 
     public Review updateReview(UUID userId, UUID reviewId, ReviewDTO body) {
         User userFound = usersService.checkIfUserIsActive(userId);
