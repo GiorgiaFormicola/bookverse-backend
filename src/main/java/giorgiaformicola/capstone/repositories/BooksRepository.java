@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,5 +18,7 @@ public interface BooksRepository extends JpaRepository<Book, UUID>, JpaSpecifica
     boolean existsByIsbn10(String isbn10);
 
     boolean existsByIsbn13(String isbn13);
+
+    List<Book> findAllByGoogleIdIn(List<String> googleIds);
 
 }

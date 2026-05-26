@@ -218,6 +218,33 @@ public class BooksService {
         usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
+            //START UPDATE
+            List<String> googleIds = booksFromGoogle.stream()
+                    .map(BookDetailDTO::googleId)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            Map<String, BookDetailDTO> dbBooksMap = booksRepository.findAllByGoogleIdIn(googleIds)
+                    .stream()
+                    .map(book -> new BookDetailDTO(
+                            book.getGoogleId(),
+                            book.getTitle(),
+                            book.getAuthors(),
+                            book.getPublisher(),
+                            book.getPublishedDate(),
+                            book.getDescription(),
+                            book.getIsbn10(),
+                            book.getIsbn13(),
+                            book.getPages(),
+                            book.getCategories(),
+                            book.getCoverURL()))
+                    .collect(Collectors.toMap(BookDetailDTO::googleId, Function.identity()));
+
+            booksFromGoogle = booksFromGoogle.stream()
+                    .map(book -> dbBooksMap.getOrDefault(book.googleId(), book))
+                    .toList();
+
+            //END UPDATE
 
             Comparator<BookDetailDTO> comparator = switch (sortBy == null ? "" : sortBy) {
                 case "title" ->
