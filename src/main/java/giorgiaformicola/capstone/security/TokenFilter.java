@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +40,12 @@ public class TokenFilter extends OncePerRequestFilter {
             tokenTools.verifyToken(accessToken);
             UUID userId = this.tokenTools.extractIdFromToken(accessToken);
             User authenticatedUser = this.usersService.findById(userId);
+            if (!authenticatedUser.isEnabled()) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"ACCOUNT_DISABLED\",\"message\":\"Your account has been disabled\"}");
+                return;
+            }
             Authentication authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, authenticatedUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);

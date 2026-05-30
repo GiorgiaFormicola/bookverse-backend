@@ -13,6 +13,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MultipartException;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestControllerAdvice
 public class ErrorsHandler {
@@ -32,6 +33,12 @@ public class ErrorsHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorDTO handleUnauthorizedException(UnauthorizedException ex) {
         return new ErrorDTO(ex.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(AccountDisabledException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handleAccountDisabledException(AccountDisabledException ex) {
+        return Map.of("error", "ACCOUNT_DISABLED", "message", ex.getMessage(), "timestamp", LocalDateTime.now().toString());
     }
 
     @ExceptionHandler(NotFoundException.class)

@@ -4,6 +4,7 @@ import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
 import giorgiaformicola.capstone.payloads.users.AccessTokenDTO;
 import giorgiaformicola.capstone.payloads.users.LoginDTO;
+import giorgiaformicola.capstone.payloads.users.ReactivationRequestDTO;
 import giorgiaformicola.capstone.payloads.users.RegistrationDTO;
 import giorgiaformicola.capstone.services.UsersService;
 import org.springframework.http.HttpStatus;
@@ -44,5 +45,16 @@ public class AuthController {
             throw new PayloadValidationException(errors);
         }
         return new AccessTokenDTO(this.usersService.checkUserCredentialsAndGenerateToken(body));
+    }
+
+    //ENDPOINT RICHIESTA RIATTIVAZIONE ACCOUNT
+    @PostMapping("reactivation-request")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivationRequest(@RequestBody @Validated ReactivationRequestDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        this.usersService.sendReactivationRequest(body);
     }
 }

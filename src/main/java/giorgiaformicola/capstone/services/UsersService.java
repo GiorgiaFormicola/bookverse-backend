@@ -4,10 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.enums.RoleType;
-import giorgiaformicola.capstone.exceptions.BadRequestException;
-import giorgiaformicola.capstone.exceptions.NotFoundException;
-import giorgiaformicola.capstone.exceptions.UnauthorizedException;
-import giorgiaformicola.capstone.exceptions.ValidationException;
+import giorgiaformicola.capstone.exceptions.*;
 import giorgiaformicola.capstone.payloads.books.LibraryBookDTO;
 import giorgiaformicola.capstone.payloads.users.*;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
@@ -72,7 +69,8 @@ public class UsersService {
     public User checkIfUserIsActive(UUID userId) {
         User found = findById(userId);
         if (!found.isActive())
-            throw new UnauthorizedException("Your account has been deactivated. Send us an email to check what happened.");
+            /*throw new UnauthorizedException("Your account has been deactivated. Send us an email to check what happened.");*/
+            throw new AccountDisabledException("Your account has been deactivated. Send us an email to check what happened.");
         return found;
     }
 
@@ -87,6 +85,8 @@ public class UsersService {
         User found = this.usersRepository.findByEmail(body.email().toLowerCase()).orElseThrow(() -> new UnauthorizedException("Wrong credentials supplied"));
         if (!bCryptEncoder.matches(body.password(), found.getPassword()))
             throw new UnauthorizedException("Wrong credentials supplied");
+        if (!found.isActive())
+            throw new AccountDisabledException("Your account has been disabled");
         return this.tokenTools.generateToken(found);
     }
 
@@ -179,6 +179,17 @@ public class UsersService {
         this.userBooksRepository.deleteByUser_Id(found.getId());
         this.reviewsRepository.deleteByUser_Id(found.getId());
         this.usersRepository.delete(found);
+    }
+
+
+    public void sendReactivationRequest(ReactivationRequestDTO body) {
+        User user = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));
+
+        if (user.isActive()) {
+            throw new BadRequestException("The provided user account is not disabled");
+        }
+        emailSender.sendReactivationRequestToAdmin(user);
+        emailSender.sendReactivationConfirmationToUser(user);
     }
 
 
