@@ -2,6 +2,7 @@ package giorgiaformicola.capstone.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import giorgiaformicola.capstone.entities.PasswordResetToken;
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.enums.RoleType;
 import giorgiaformicola.capstone.exceptions.*;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -39,8 +41,9 @@ public class UsersService {
     private final UserBooksRepository userBooksRepository;
     private final EmailSender emailSender;
     private final ReviewsRepository reviewsRepository;
+    private final PasswordResetTokensService passwordResetTokensService;
 
-    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary, UserBooksRepository userBooksRepository, EmailSender emailSender, ReviewsRepository reviewsRepository) {
+    public UsersService(UsersRepository usersRepository, PasswordEncoder bCryptEncoder, TokenTools tokenTools, Cloudinary cloudinary, UserBooksRepository userBooksRepository, EmailSender emailSender, ReviewsRepository reviewsRepository, PasswordResetTokensService passwordResetTokensService) {
         this.usersRepository = usersRepository;
         this.bCryptEncoder = bCryptEncoder;
         this.tokenTools = tokenTools;
@@ -48,6 +51,7 @@ public class UsersService {
         this.userBooksRepository = userBooksRepository;
         this.emailSender = emailSender;
         this.reviewsRepository = reviewsRepository;
+        this.passwordResetTokensService = passwordResetTokensService;
     }
 
     public User save(RegistrationDTO body) {
@@ -182,7 +186,7 @@ public class UsersService {
     }
 
 
-    public void sendReactivationRequest(ReactivationRequestDTO body) {
+    public void sendReactivationRequest(SupportRequestDTO body) {
         User user = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));
 
         if (user.isActive()) {
@@ -190,6 +194,26 @@ public class UsersService {
         }
         emailSender.sendReactivationRequestToAdmin(user);
         emailSender.sendReactivationConfirmationToUser(user);
+    }
+
+    public void sendResetPasswordEmail(SupportRequestDTO body) {
+        Optional<User> user = this.usersRepository.findByEmail(body.email());
+        /*.orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));*/
+        if (user.isEmpty()) return;
+        User userFound = user.get();
+        PasswordResetToken resetToken = passwordResetTokensService.createToken(userFound);
+        emailSender.sendResetPasswordEmail(userFound, resetToken.getId());
+    }
+
+    public void resetPassword(ResetPasswordDTO body) {
+        PasswordResetToken resetToken = passwordResetTokensService.findById(body.tokenId());
+        passwordResetTokensService.validateToken(resetToken);
+
+        User user = resetToken.getUser();
+        user.setPassword(bCryptEncoder.encode(body.newPassword()));
+        usersRepository.save(user);
+
+        passwordResetTokensService.findByIdAndDeleteToken(resetToken.getId());
     }
 
 

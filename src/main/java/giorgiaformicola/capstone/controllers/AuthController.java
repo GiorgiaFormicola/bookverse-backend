@@ -2,10 +2,7 @@ package giorgiaformicola.capstone.controllers;
 
 import giorgiaformicola.capstone.entities.User;
 import giorgiaformicola.capstone.exceptions.PayloadValidationException;
-import giorgiaformicola.capstone.payloads.users.AccessTokenDTO;
-import giorgiaformicola.capstone.payloads.users.LoginDTO;
-import giorgiaformicola.capstone.payloads.users.ReactivationRequestDTO;
-import giorgiaformicola.capstone.payloads.users.RegistrationDTO;
+import giorgiaformicola.capstone.payloads.users.*;
 import giorgiaformicola.capstone.services.UsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -50,11 +47,33 @@ public class AuthController {
     //ENDPOINT RICHIESTA RIATTIVAZIONE ACCOUNT
     @PostMapping("reactivation-request")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reactivationRequest(@RequestBody @Validated ReactivationRequestDTO body, BindingResult validationResult) {
+    public void reactivationRequest(@RequestBody @Validated SupportRequestDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getAllErrors().stream().map(error -> error.getDefaultMessage()).toList();
             throw new PayloadValidationException(errors);
         }
         this.usersService.sendReactivationRequest(body);
+    }
+
+    //ENDPOINT RICHIESTA PASSWORD DIMENTICATA
+    @PostMapping("forgot-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(@RequestBody @Validated SupportRequestDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(e -> e.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        this.usersService.sendResetPasswordEmail(body);
+    }
+
+    //ENDPOINT RICHIESTA RESET PASSWORD
+    @PostMapping("reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@RequestBody @Validated ResetPasswordDTO body, BindingResult validationResult) {
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getAllErrors().stream().map(e -> e.getDefaultMessage()).toList();
+            throw new PayloadValidationException(errors);
+        }
+        this.usersService.resetPassword(body);
     }
 }
