@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -104,7 +105,7 @@ public class ReviewsController {
 
     @GetMapping("/books/{googleId}/reviews/me")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public Review getMyReview(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
+    public Optional<Review> getMyReview(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
         return reviewsService.findByBookAndUser(currentAuthenticatedUser.getId(), googleId);
     }
 

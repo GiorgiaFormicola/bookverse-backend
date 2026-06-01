@@ -179,6 +179,15 @@ public class BooksController {
         booksService.findByIdAndDelete(googleId);
     }
 
+    //ENDPOINT PER OTTERE STATISTICHE LIBRO
+    @GetMapping("/{googleId}/stats")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public BookStatsDTO getBookStats(@PathVariable String googleId) {
+        return booksService.getBookStats(googleId);
+    }
+
+
+
     /*@GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public OpenLibraryWorksSearchResponseDTO searchFromAPI(@RequestParam String query,

@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import giorgiaformicola.capstone.clients.GoogleBooksClient;
 import giorgiaformicola.capstone.clients.OpenLibraryClient;
 import giorgiaformicola.capstone.entities.Book;
+import giorgiaformicola.capstone.enums.StatusType;
 import giorgiaformicola.capstone.exceptions.*;
 import giorgiaformicola.capstone.payloads.books.*;
 import giorgiaformicola.capstone.repositories.BooksRepository;
@@ -465,6 +466,16 @@ public class BooksService {
         Book found = getByGoogleId(googleId);
         found.setCategories(body.categories());
         return booksRepository.save(found);
+    }
+
+    public BookStatsDTO getBookStats(String googleId) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
+        long saved = userBooksRepository.countByBook_GoogleId(googleId);
+        long read = userBooksRepository.countByBook_GoogleIdAndStatus(googleId, StatusType.READ);
+        long reading = userBooksRepository.countByBook_GoogleIdAndStatus(googleId, StatusType.READING);
+        long reviews = reviewsRepository.countByBook_GoogleId(googleId);
+        return new BookStatsDTO(saved, read, reading, reviews);
     }
 
     /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {

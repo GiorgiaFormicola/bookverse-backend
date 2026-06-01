@@ -7,6 +7,7 @@ import giorgiaformicola.capstone.enums.RoleType;
 import giorgiaformicola.capstone.exceptions.BadRequestException;
 import giorgiaformicola.capstone.exceptions.NotFoundException;
 import giorgiaformicola.capstone.exceptions.UnauthorizedException;
+import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.reviews.ReviewDTO;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -106,8 +108,10 @@ public class ReviewsService {
 
     }
 
-    public Review findByBookAndUser(UUID userId, String googleId) {
+    public Optional<Review> findByBookAndUser(UUID userId, String googleId) {
+        if (googleId == null || googleId.isBlank())
+            throw new ValidationException("You must provide a valid google id");
         User userFound = usersService.checkIfUserIsActive(userId);
-        return reviewsRepository.findByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("Review not found"));
+        return reviewsRepository.findByUser_IdAndBook_GoogleId(userFound.getId(), googleId);
     }
 }

@@ -1,6 +1,7 @@
 package giorgiaformicola.capstone.repositories;
 
 import giorgiaformicola.capstone.entities.UserBook;
+import giorgiaformicola.capstone.enums.StatusType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -22,4 +23,8 @@ public interface UserBooksRepository extends JpaRepository<UserBook, UUID>, JpaS
     void deleteByUser_Id(UUID userId);
 
     void deleteByBook_Id(UUID bookId);
+
+    long countByBook_GoogleId(String googleId);
+
+    long countByBook_GoogleIdAndStatus(String googleId, StatusType status);
 }

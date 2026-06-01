@@ -16,5 +16,7 @@ public interface ReviewsRepository extends JpaRepository<Review, UUID>, JpaSpeci
 
     void deleteByBook_Id(UUID bookId);
 
-    Optional<Review> findByUser_IdAndBook_GoogleId(UUID userId, String bookGoogleId);
+    Optional<Review> findByUser_IdAndBook_GoogleId(UUID userId, String googleId);
+
+    long countByBook_GoogleId(String googleId);
 }
