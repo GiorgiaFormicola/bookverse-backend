@@ -81,7 +81,8 @@ public class UsersService {
     public UserProfileDTO getUserProfileById(UUID userId) {
         User found = findById(userId);
         List<LibraryBookDTO> books = userBooksRepository.findUserBookByUser_Id(userId).stream().map(result -> new LibraryBookDTO(result.getBook().getGoogleId(), result.isPublic(), result.getStatus())).toList();
-        return new UserProfileDTO(found, books);
+        long totalReviews = reviewsRepository.countByUser_Id(found.getId());
+        return new UserProfileDTO(found, books, totalReviews);
     }
 
 

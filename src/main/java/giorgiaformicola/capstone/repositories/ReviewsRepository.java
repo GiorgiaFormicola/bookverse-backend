@@ -19,4 +19,6 @@ public interface ReviewsRepository extends JpaRepository<Review, UUID>, JpaSpeci
     Optional<Review> findByUser_IdAndBook_GoogleId(UUID userId, String googleId);
 
     long countByBook_GoogleId(String googleId);
+
+    long countByUser_Id(UUID userId);
 }

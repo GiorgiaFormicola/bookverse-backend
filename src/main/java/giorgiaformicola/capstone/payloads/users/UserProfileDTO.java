@@ -7,6 +7,7 @@ import java.util.List;
 
 public record UserProfileDTO(
         User user,
-        List<LibraryBookDTO> savedBooks
+        List<LibraryBookDTO> savedBooks,
+        long totalReviews
 ) {
 }
