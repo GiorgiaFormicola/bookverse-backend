@@ -69,7 +69,6 @@ public class UserBooksSpecification {
                 predicates.add(cb.equal(root.get("status"), status));
             }
 
-
             if (reviewed != null) {
 
                 Subquery<UUID> subquery = query.subquery(UUID.class);

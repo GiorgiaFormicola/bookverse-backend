@@ -105,4 +105,9 @@ public class ReviewsService {
         return this.findAll(specification, page, size, sortBy, order);
 
     }
+
+    public Review findByBookAndUser(UUID userId, String googleId) {
+        User userFound = usersService.checkIfUserIsActive(userId);
+        return reviewsRepository.findByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("Review not found"));
+    }
 }

@@ -67,7 +67,6 @@ public class ReviewsController {
         );
         return this.reviewsService.findAllByBookGoogleId(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }
-    
 
     @PostMapping("/books/{googleId}/reviews")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
@@ -101,6 +100,12 @@ public class ReviewsController {
     public void deleteReview(@AuthenticationPrincipal User currentAuthenticatedUser,
                              @PathVariable UUID reviewId) {
         this.reviewsService.deleteReview(currentAuthenticatedUser.getId(), reviewId);
+    }
+
+    @GetMapping("/books/{googleId}/reviews/me")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    public Review getMyReview(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
+        return reviewsService.findByBookAndUser(currentAuthenticatedUser.getId(), googleId);
     }
 
     ;
