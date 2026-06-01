@@ -67,6 +67,7 @@ public class ReviewsController {
         );
         return this.reviewsService.findAllByBookGoogleId(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }
+    
 
     @PostMapping("/books/{googleId}/reviews")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")

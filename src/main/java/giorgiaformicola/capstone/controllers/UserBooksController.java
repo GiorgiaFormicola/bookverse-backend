@@ -41,6 +41,7 @@ public class UserBooksController {
                                                @RequestParam(required = false) String isbn,
                                                @RequestParam(required = false) Boolean isPublic,
                                                @RequestParam(required = false) StatusType status,
+                                               @RequestParam(required = false) Boolean reviewed,
                                                @RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "20") int size,
                                                @RequestParam(defaultValue = "title") String sortBy,
@@ -55,7 +56,8 @@ public class UserBooksController {
                 isbn,
                 category,
                 isPublic,
-                status
+                status,
+                reviewed
         );
         return userBooksService.findUserBooks(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }

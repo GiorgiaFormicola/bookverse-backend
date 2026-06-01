@@ -1,10 +1,13 @@
 package giorgiaformicola.capstone.specifications;
 
 import giorgiaformicola.capstone.entities.Book;
+import giorgiaformicola.capstone.entities.Review;
 import giorgiaformicola.capstone.entities.UserBook;
 import giorgiaformicola.capstone.enums.StatusType;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -21,7 +24,8 @@ public class UserBooksSpecification {
             String isbn13,
             String category,
             Boolean isPublic,
-            StatusType status
+            StatusType status,
+            Boolean reviewed
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -63,6 +67,20 @@ public class UserBooksSpecification {
 
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
+            }
+
+
+            if (reviewed != null) {
+
+                Subquery<UUID> subquery = query.subquery(UUID.class);
+                Root<Review> reviewRoot = subquery.from(Review.class);
+                subquery.select(reviewRoot.get("book").get("id"))
+                        .where(cb.equal(reviewRoot.get("user").get("id"), userId));
+                if (reviewed) {
+                    predicates.add(root.get("book").get("id").in(subquery));
+                } else {
+                    predicates.add(cb.not(root.get("book").get("id").in(subquery)));
+                }
             }
 
             /*query.distinct(true);*/
