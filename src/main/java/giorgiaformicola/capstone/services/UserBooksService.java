@@ -12,7 +12,7 @@ import giorgiaformicola.capstone.payloads.books.BookStatusDTO;
 import giorgiaformicola.capstone.payloads.books.BookVisibilityDTO;
 import giorgiaformicola.capstone.payloads.books.UserLibraryBookDTO;
 import giorgiaformicola.capstone.repositories.UserBooksRepository;
-import giorgiaformicola.capstone.repositories.UsersRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,18 +22,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class UserBooksService {
     private final UserBooksRepository userBooksRepository;
     private final UsersService usersService;
     private final BooksService booksService;
-    private final UsersRepository usersRepository;
 
-    public UserBooksService(UserBooksRepository userBooksRepository, UsersService usersService, BooksService booksService, UsersRepository usersRepository) {
+    public UserBooksService(UserBooksRepository userBooksRepository, UsersService usersService, BooksService booksService) {
         this.userBooksRepository = userBooksRepository;
         this.usersService = usersService;
         this.booksService = booksService;
-        this.usersRepository = usersRepository;
     }
 
     public UserBook save(UUID userId, UUID bookId) {
@@ -55,11 +54,15 @@ public class UserBooksService {
         try {
             Book bookFound = booksService.getByGoogleId(body.googleId());
             UserBook toSave = new UserBook(bookFound, userFound);
-            return this.userBooksRepository.save(toSave);
+            UserBook saved = this.userBooksRepository.save(toSave);
+            log.info("Book added to library: user={}, book={}", userId, body.googleId());
+            return saved;
         } catch (NotFoundException ex) {
             Book newBook = booksService.save(body);
             UserBook toSave = new UserBook(newBook, userFound);
-            return this.userBooksRepository.save(toSave);
+            UserBook saved = this.userBooksRepository.save(toSave);
+            log.info("Book added to library: user={}, book={}", userId, body.googleId());
+            return saved;
         }
     }
 
@@ -91,7 +94,9 @@ public class UserBooksService {
         if (found.isPublic() == body.isPublic())
             throw new BadRequestException("The book visibility is already set to " + (body.isPublic() ? "public" : "private"));
         found.setPublic(body.isPublic());
-        return this.userBooksRepository.save(found);
+        UserBook updated = this.userBooksRepository.save(found);
+        log.info("Book visibility updated: user={}, book={}, public={}", userId, googleId, body.isPublic());
+        return updated;
     }
 
     public UserBook updateBookStatusFromUserLibrary(UUID userId, String googleId, BookStatusDTO body) {
@@ -102,7 +107,9 @@ public class UserBooksService {
         if (found.getStatus().equals(StatusType.valueOf(body.status())))
             throw new BadRequestException("The book status is already set to " + body.status());
         found.setStatus(StatusType.valueOf(body.status()));
-        return this.userBooksRepository.save(found);
+        UserBook updated = this.userBooksRepository.save(found);
+        log.info("Book status updated: user={}, book={}, status={}", userId, googleId, body.status());
+        return updated;
     }
 
     public void deleteBookFromUserLibrary(UUID userId, String googleId) {
@@ -111,5 +118,6 @@ public class UserBooksService {
         User userFound = usersService.checkIfUserIsActive(userId);
         UserBook found = userBooksRepository.findUserBookByUser_IdAndBook_GoogleId(userFound.getId(), googleId).orElseThrow(() -> new NotFoundException("The book with id '" + googleId + "' is not present in the user library"));
         userBooksRepository.delete(found);
+        log.info("Book removed from library: user={}, book={}", userId, googleId);
     }
 }

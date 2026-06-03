@@ -4,6 +4,7 @@ import giorgiaformicola.capstone.exceptions.GoogleBooksSearchException;
 import giorgiaformicola.capstone.payloads.books.GoogleBooksSearchResultDTO;
 import giorgiaformicola.capstone.payloads.books.GoogleItemDTO;
 import giorgiaformicola.capstone.payloads.books.SearchFieldsDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -12,6 +13,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @Component
 public class GoogleBooksClient {
     private final RestClient restClient;
@@ -25,7 +27,6 @@ public class GoogleBooksClient {
 
     public GoogleBooksSearchResultDTO searchBooks(SearchFieldsDTO searchFields) {
         String query = buildQuery(searchFields.title(), searchFields.author(), searchFields.publisher(), searchFields.category(), searchFields.isbn());
-        /*String encodedQuery = UriUtils.encodeQuery(query, StandardCharsets.UTF_8);*/
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
@@ -34,21 +35,13 @@ public class GoogleBooksClient {
                                 .queryParam("q", query)
                                 .queryParam("maxResults", 40)
                                 .queryParam("printType", "books")
-                                /*.queryParam("startIndex", page * 20)*/
                                 .queryParam("orderBy", "relevance")
                                 .queryParam("key", apiKey)
                                 .build())
                         .retrieve()
-                        .onStatus(status -> status.isError(), (req, res) -> {
-                            System.out.println("Google error status: " + res.getStatusCode());
-                            System.out.println("Body: " + new String(res.getBody().readAllBytes()));
-                        })
                         .body(GoogleBooksSearchResultDTO.class);
             } catch (HttpServerErrorException | ResourceAccessException e) {
-                e.printStackTrace();
-
-                System.out.println(e.getMessage());
-
+                log.warn("Google Books unavailable, attempt {}/{}: {}", attempt, maxAttempts, e.getMessage());
                 if (attempt == maxAttempts) {
                     throw new GoogleBooksSearchException("Google Books unavailable after retries", e);
                 }
@@ -58,14 +51,10 @@ public class GoogleBooksClient {
                     Thread.currentThread().interrupt();
                 }
             } catch (HttpClientErrorException e) {
-                System.err.println("Google Books client error (non retryable)");
-                System.err.println("Status: " + e.getStatusCode());
-                System.err.println("Body: " + e.getResponseBodyAsString());
+                log.error("Google Books client error: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
                 throw new GoogleBooksSearchException("Google Books request invalid", e);
             } catch (Exception e) {
-                System.err.println("Unexpected error while calling Google Books");
-                e.printStackTrace();
-
+                log.error("Unexpected error while calling Google Books", e);
                 throw new GoogleBooksSearchException("Unexpected error", e);
             }
         }
@@ -84,10 +73,7 @@ public class GoogleBooksClient {
                         .retrieve()
                         .body(GoogleItemDTO.class);
             } catch (HttpServerErrorException | ResourceAccessException e) {
-                e.printStackTrace();
-
-                System.out.println(e.getMessage());
-
+                log.warn("Google Books unavailable, attempt {}/{}: {}", attempt, maxAttempts, e.getMessage());
                 if (attempt == maxAttempts) {
                     throw new GoogleBooksSearchException("Google Books unavailable after retries", e);
                 }
@@ -97,14 +83,10 @@ public class GoogleBooksClient {
                     Thread.currentThread().interrupt();
                 }
             } catch (HttpClientErrorException e) {
-                System.err.println("Google Books client error (non retryable)");
-                System.err.println("Status: " + e.getStatusCode());
-                System.err.println("Body: " + e.getResponseBodyAsString());
+                log.error("Google Books client error: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
                 throw new GoogleBooksSearchException("Google Books request invalid", e);
             } catch (Exception e) {
-                System.err.println("Unexpected error while calling Google Books");
-                e.printStackTrace();
-
+                log.error("Unexpected error while calling Google Books", e);
                 throw new GoogleBooksSearchException("Unexpected error", e);
             }
         }

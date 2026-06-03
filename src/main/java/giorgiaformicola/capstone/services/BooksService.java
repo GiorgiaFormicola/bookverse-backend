@@ -3,7 +3,6 @@ package giorgiaformicola.capstone.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import giorgiaformicola.capstone.clients.GoogleBooksClient;
-import giorgiaformicola.capstone.clients.OpenLibraryClient;
 import giorgiaformicola.capstone.entities.Book;
 import giorgiaformicola.capstone.enums.StatusType;
 import giorgiaformicola.capstone.exceptions.*;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class BooksService {
-    private final OpenLibraryClient openLibraryClient;
     private final GoogleBooksClient googleBooksClient;
     private final BooksRepository booksRepository;
     private final UserBooksRepository userBooksRepository;
@@ -39,8 +37,7 @@ public class BooksService {
     private final Cloudinary cloudinary;
     private final ReviewsRepository reviewsRepository;
 
-    public BooksService(OpenLibraryClient openLibraryClient, GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService, ReviewsRepository reviewsRepository) {
-        this.openLibraryClient = openLibraryClient;
+    public BooksService(GoogleBooksClient googleBooksClient, BooksRepository booksRepository, UserBooksRepository userBooksRepository, Cloudinary cloudinary, UsersService usersService, ReviewsRepository reviewsRepository) {
         this.googleBooksClient = googleBooksClient;
         this.booksRepository = booksRepository;
         this.userBooksRepository = userBooksRepository;
@@ -53,7 +50,7 @@ public class BooksService {
         return this.booksRepository.findById(bookId).orElseThrow(() -> new NotFoundException("book", bookId));
     }
 
-    //TODO: rivedi paginazione
+
     public Page<Book> findAll(Specification<Book> specification, int page, int size, String sortBy, String order) {
         if (page < 0) page = 0;
         if (size < 0 || size > 100) size = 20;
@@ -88,138 +85,10 @@ public class BooksService {
         return itemsFiltered;
     }
 
-    /*public Page<Book> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
-        usersService.checkIfUserIsActive(userId);
-        try {
-            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
-            List<Book> books = booksFromGoogle.stream().map(bookDetailDTO -> new Book(
-                    bookDetailDTO.googleId(),
-                    bookDetailDTO.title(),
-                    bookDetailDTO.authors(),
-                    bookDetailDTO.publisher(),
-                    bookDetailDTO.publishedDate(),
-                    bookDetailDTO.description(),
-                    bookDetailDTO.isbn10(),
-                    bookDetailDTO.isbn13(),
-                    bookDetailDTO.pages(),
-                    bookDetailDTO.categories(),
-                    bookDetailDTO.coverURL())).toList();
-
-            *//*for (Book book : books) {
-                try {
-                    this.save(book);
-                } catch (BadRequestException ex) {
-                    // skip this book because already exists in the db
-                }
-            }*//*
-
-            if (page < 0) page = 0;
-
-
-            Comparator<Book> comparator = switch (sortBy == null ? "" : sortBy) {
-                case "title" ->
-                        Comparator.comparing(Book::getTitle, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-                case "publisher" ->
-                        Comparator.comparing(Book::getPublisher, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-                case "pages" -> Comparator.comparing(Book::getPages, Comparator.nullsLast(Comparator.naturalOrder()));
-                default -> null;
-            };
-
-            if ("desc".equalsIgnoreCase(order)) {
-                if (comparator != null) {
-                    books = books.stream().sorted(comparator.reversed()).toList();
-                }
-            }
-
-            Pageable pageable = PageRequest.of(page, 10);
-
-            int start = Math.min((int) pageable.getOffset(), books.size());
-            int end = Math.min(start + pageable.getPageSize(), books.size());
-            List<Book> pageContent = start > end ? List.of() : books.subList(start, end);
-            return new PageImpl<>(pageContent, pageable, books.size());
-        } catch (GoogleBooksSearchException ex) {
-            Specification<Book> specification = BooksSpecification.filter(
-                    searchFields.title(),
-                    searchFields.author(),
-                    searchFields.publisher(),
-                    searchFields.isbn(),
-                    searchFields.isbn(),
-                    searchFields.category()
-            );
-
-            List<Book> booksFromDb = booksRepository.findAll(specification);
-            if (booksFromDb.isEmpty()) throw new SearchException();
-            if (sortBy == null || sortBy.isBlank()) sortBy = "title";
-            return findAll(specification, page, 10, sortBy, order);
-        }
-    }*/
-
-    /*public Page<BookDetailDTO> searchBooks(UUID userId, SearchFieldsDTO searchFields, int page, String sortBy, String order) {
-        usersService.checkIfUserIsActive(userId);
-        try {
-            List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
-
-            if (page < 0) page = 0;
-
-
-            Comparator<BookDetailDTO> comparator = switch (sortBy == null ? "" : sortBy) {
-                case "title" ->
-                        Comparator.comparing(BookDetailDTO::title, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-                case "publisher" ->
-                        Comparator.comparing(BookDetailDTO::publisher, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-                case "pages" ->
-                        Comparator.comparing(BookDetailDTO::pages, Comparator.nullsLast(Comparator.naturalOrder()));
-                default -> null;
-            };
-
-            if ("desc".equalsIgnoreCase(order)) {
-                if (comparator != null) {
-                    booksFromGoogle = booksFromGoogle.stream().sorted(comparator.reversed()).toList();
-                }
-            }
-
-            Pageable pageable = PageRequest.of(page, 10);
-
-            int start = Math.min((int) pageable.getOffset(), booksFromGoogle.size());
-            int end = Math.min(start + pageable.getPageSize(), booksFromGoogle.size());
-            List<BookDetailDTO> pageContent = start > end ? List.of() : booksFromGoogle.subList(start, end);
-            return new PageImpl<>(pageContent, pageable, booksFromGoogle.size());
-        } catch (GoogleBooksSearchException ex) {
-            Specification<Book> specification = BooksSpecification.filter(
-                    searchFields.title(),
-                    searchFields.author(),
-                    searchFields.publisher(),
-                    searchFields.isbn(),
-                    searchFields.isbn(),
-                    searchFields.category()
-            );
-
-            List<Book> booksFromDb = booksRepository.findAll(specification);
-            if (booksFromDb.isEmpty()) throw new SearchException();
-            if (sortBy == null || sortBy.isBlank()) sortBy = "title";
-            Page<Book> booksPage = findAll(specification, page, 10, sortBy, order);
-
-            return booksPage.map(book -> new BookDetailDTO(
-                    book.getGoogleId(),
-                    book.getTitle(),
-                    book.getAuthors(),
-                    book.getPublisher(),
-                    book.getPublishedDate(),
-                    book.getDescription(),
-                    book.getIsbn10(),
-                    book.getIsbn13(),
-                    book.getPages(),
-                    book.getCategories(),
-                    book.getCoverURL())
-            );
-        }
-    }*/
-
     public List<BookDetailDTO> searchBooks(UUID userId, SearchFieldsDTO searchFields, String sortBy, String order) {
         usersService.checkIfUserIsActive(userId);
         try {
             List<BookDetailDTO> booksFromGoogle = searchBooksFromGoogle(searchFields);
-            //START UPDATE
             List<String> googleIds = booksFromGoogle.stream()
                     .map(BookDetailDTO::googleId)
                     .filter(Objects::nonNull)
@@ -244,8 +113,6 @@ public class BooksService {
             booksFromGoogle = booksFromGoogle.stream()
                     .map(book -> dbBooksMap.getOrDefault(book.googleId(), book))
                     .toList();
-
-            //END UPDATE
 
             Comparator<BookDetailDTO> comparator = switch (sortBy == null ? "" : sortBy) {
                 case "title" ->
@@ -278,13 +145,11 @@ public class BooksService {
                     searchFields.category()
             );
 
-            /* if(order.equalsIgnoreCase("desc"))*/
             Pageable pageable = PageRequest.of(0, 40, Sort.by("title"));
 
             Page<Book> booksPage = booksRepository.findAll(specification, pageable);
             List<Book> booksFromDb = booksPage.getContent();
             if (booksFromDb.isEmpty()) throw new SearchException();
-            /*if (sortBy == null || sortBy.isBlank()) sortBy = "title";*/
             List<BookDetailDTO> booksMapped = booksFromDb.stream().map(book -> new BookDetailDTO(
                     book.getGoogleId(),
                     book.getTitle(),
@@ -350,7 +215,9 @@ public class BooksService {
                 body.pages(),
                 body.categories(),
                 body.coverURL());
-        return booksRepository.save(newBook);
+        Book saved = booksRepository.save(newBook);
+        log.info("Book saved in database: {}", saved.getGoogleId());
+        return saved;
     }
 
     public Book save(Book book) {
@@ -360,7 +227,9 @@ public class BooksService {
             throw new BadRequestException("Book with ISBN-10 " + book.getIsbn10() + " already saved in the database");
         if (book.getIsbn13() != null && booksRepository.existsByIsbn13(book.getIsbn13()))
             throw new BadRequestException("Book with ISBN-13 " + book.getIsbn13() + " already saved in the database");
-        return booksRepository.save(book);
+        Book saved = booksRepository.save(book);
+        log.info("Book saved in database: {}", saved.getGoogleId());
+        return saved;
     }
 
     public Book getByGoogleId(String googleId) {
@@ -434,9 +303,11 @@ public class BooksService {
         try {
             Map result = this.cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
             found.setCoverURL((String) result.get("secure_url"));
+            log.info("Book cover updated: {}", googleId);
             return this.booksRepository.save(found);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            log.error("Failed to upload cover for book: {}", googleId, ex);
+            throw new BadRequestException("Failed to upload the cover image, try again.");
         }
     }
 
@@ -448,6 +319,7 @@ public class BooksService {
         userBooksRepository.deleteByBook_Id(found.getId());
         reviewsRepository.deleteByBook_Id(found.getId());
         booksRepository.delete(found);
+        log.info("Book deleted: {}", googleId);
     }
 
     @Transactional
@@ -477,12 +349,4 @@ public class BooksService {
         long reviews = reviewsRepository.countByBook_GoogleId(googleId);
         return new BookStatsDTO(saved, read, reading, reviews);
     }
-
-    /*public OpenLibraryWorksSearchResponseDTO searchWorksFromOpenLibrary(String query, int page) {
-        return openLibraryClient.searchWorks(query, page);
-    }
-
-    public OpenLibraryBookDetailsDTO getBookFromOpenLibrary(String editionId) {
-        return openLibraryClient.searchBook(editionId);
-    }*/
 }

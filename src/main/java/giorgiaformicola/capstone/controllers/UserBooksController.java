@@ -29,8 +29,7 @@ public class UserBooksController {
     public UserBooksController(UserBooksService userBooksService) {
         this.userBooksService = userBooksService;
     }
-
-    //ENDPOINT PER OTTENERE I LIBRI NELLA LA MIA LIBRERIA
+    
     @GetMapping
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Page<UserLibraryBookDTO> getMyBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
@@ -62,7 +61,6 @@ public class UserBooksController {
         return userBooksService.findUserBooks(currentAuthenticatedUser.getId(), specification, page, size, sortBy, order);
     }
 
-    //ENDPOINT PER SALVARE LIBRO NEL DB SE NON ESISTE GIA' ED POI AGGIUNGERLO ALLA LIBRERIA UTENTE
     @PostMapping
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -74,7 +72,6 @@ public class UserBooksController {
         return userBooksService.saveBookToUserLibrary(currentAuthenticatedUser.getId(), body);
     }
 
-    //ENDPOINT PER AGGIORNARE VISIBILITA' LIBRO DENTRO LIBRERIA UTENTE
     @PatchMapping("/{googleId}/visibility")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public UserBook updateMyBookVisibility(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId, @RequestBody @Validated BookVisibilityDTO body, BindingResult validationResult) {
@@ -85,7 +82,6 @@ public class UserBooksController {
         return userBooksService.updateBookVisibilityFromUserLibrary(currentAuthenticatedUser.getId(), googleId, body);
     }
 
-    //ENDPOINT PER AGGIORNARE STATO LIBRO DENTRO LIBRERIA UTENTE
     @PatchMapping("/{googleId}/status")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public UserBook updateMyBookStatus(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId, @RequestBody @Validated BookStatusDTO body, BindingResult validationResult) {
@@ -96,13 +92,10 @@ public class UserBooksController {
         return userBooksService.updateBookStatusFromUserLibrary(currentAuthenticatedUser.getId(), googleId, body);
     }
 
-    //ENDPOINT PER ELIMINARE LIBRO DA LIBRERIA UTENTE
     @DeleteMapping("/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBookMyLibrary(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
         userBooksService.deleteBookFromUserLibrary(currentAuthenticatedUser.getId(), googleId);
     }
-
-
 }

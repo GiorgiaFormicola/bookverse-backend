@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Table(name = "user_books", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "book_id"})})
 @Getter
 @Setter
+@ToString
 public class UserBook {
     @Id
     @GeneratedValue

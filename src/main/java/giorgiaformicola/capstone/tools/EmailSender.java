@@ -5,33 +5,37 @@ import giorgiaformicola.capstone.payloads.users.EmailSendingResponseDTO;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
 import kong.unirest.core.Unirest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class EmailSender {
     private final String domainName;
     private final String apiKey;
-    private String frontendUrl;
+    private final String frontendUrl;
+    private final String adminEmail;
 
-    public EmailSender(@Value("${mailgun.domainName}") String domainName, @Value("${mailgun.apiKey}") String apiKey, @Value("${frontend.url}") String frontendUrl) {
+    public EmailSender(@Value("${mailgun.domainName}") String domainName, @Value("${mailgun.apiKey}") String apiKey, @Value("${frontend.url}") String frontendUrl, @Value("${mailgun.adminEmail}") String adminEmail) {
         this.domainName = domainName;
         this.apiKey = apiKey;
         this.frontendUrl = frontendUrl;
+        this.adminEmail = adminEmail;
     }
 
     public EmailSendingResponseDTO sendRegistrationEmail(User recipient) {
         HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domainName + "/messages")
                 .basicAuth("api", this.apiKey)
                 .queryString("from", "BookVerse <noreply@bookverse.com>")
-                .queryString("to", recipient.getEmail()) // <-- VERIFIED RECIPIENT
+                .queryString("to", recipient.getEmail())
                 .queryString("subject", "User registration")
                 .queryString("text", "Hello, " + recipient.getDisplayName() + "! You've been successfully registered! Welcome aboard!")
                 .asJson();
-        System.out.println(response.getBody());
+        log.info("Registration email sent to: {}", recipient.getEmail());
         return new EmailSendingResponseDTO("Email successfully sent to " + recipient.getEmail(), LocalDateTime.now());
     }
 
@@ -39,11 +43,11 @@ public class EmailSender {
         HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domainName + "/messages")
                 .basicAuth("api", this.apiKey)
                 .queryString("from", "BookVerse <noreply@bookverse.com>")
-                .queryString("to", recipient.getEmail()) // <-- VERIFIED RECIPIENT
+                .queryString("to", recipient.getEmail())
                 .queryString("subject", "User email update")
-                .queryString("text", "Hello, " + recipient.getDisplayName() + "! You're email has been successfully updated!")
+                .queryString("text", "Hello, " + recipient.getDisplayName() + "! Your email has been successfully updated!")
                 .asJson();
-        System.out.println(response.getBody());
+        log.info("Email update notification sent to: {}", recipient.getEmail());
         return new EmailSendingResponseDTO("Email successfully sent to " + recipient.getEmail(), LocalDateTime.now());
     }
 
@@ -51,11 +55,11 @@ public class EmailSender {
         HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domainName + "/messages")
                 .basicAuth("api", this.apiKey)
                 .queryString("from", "BookVerse <noreply@bookverse.com>")
-                .queryString("to", "giorgia.formicola97@gmail.com") // ← la tua email admin
+                .queryString("to", adminEmail)
                 .queryString("subject", "Reactivation request from " + recipient.getEmail())
-                .queryString("text", "User '" + recipient.getUsername() + "' (" + recipient.getEmail() + ") has requested an account reactivation.")
+                .queryString("text", "User '" + recipient.getUsername() + "' ( email: " + recipient.getEmail() + ", id: " + recipient.getId() + " ) has requested an account reactivation.")
                 .asJson();
-        System.out.println(response.getBody());
+        log.info("Reactivation request sent for: {}", recipient.getEmail());
         return new EmailSendingResponseDTO("Reactivation request sent for " + recipient.getEmail(), LocalDateTime.now());
     }
 
@@ -67,8 +71,8 @@ public class EmailSender {
                 .queryString("subject", "Reactivation request received")
                 .queryString("text", "Hello, " + recipient.getDisplayName() + "! We have received your reactivation request. We will get back to you as soon as possible.")
                 .asJson();
-        System.out.println(response.getBody());
-        return new EmailSendingResponseDTO("Confirmation email sent to " + recipient.getEmail(), LocalDateTime.now());
+        log.info("Reactivation confirmation email sent to: {}", recipient.getEmail());
+        return new EmailSendingResponseDTO("Reactivation confirmation email sent to " + recipient.getEmail(), LocalDateTime.now());
     }
 
     public EmailSendingResponseDTO sendResetPasswordEmail(User recipient, UUID token) {
@@ -80,7 +84,8 @@ public class EmailSender {
                 .queryString("subject", "Reset your password")
                 .queryString("text", "Hello " + recipient.getDisplayName() + "!\n\nClick the link below to reset your password:\n\n" + resetLink + "\n\nThe link expires in 1 hour.\n\nIf you didn't request this, you can safely ignore this email.")
                 .asJson();
-        System.out.println(response.getBody());
+        log.info("Reset password email sent to: {}", recipient.getEmail());
         return new EmailSendingResponseDTO("Reset password email sent to " + recipient.getEmail(), LocalDateTime.now());
     }
 }
+

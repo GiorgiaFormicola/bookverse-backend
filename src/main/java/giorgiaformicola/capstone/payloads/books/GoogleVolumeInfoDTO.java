@@ -12,11 +12,15 @@ public record GoogleVolumeInfoDTO(
         String publisher,
         String publishedDate,
         String description,
+
         @JsonProperty("industryIdentifiers")
         List<GoogleVolumeIdentifierDTO> identifiers,
+
         @JsonProperty("pageCount")
         Long pages,
+        
         List<String> categories,
+
         @JsonProperty("imageLinks")
         GoogleVolumeImageLinksDTO coverURLS
 ) {

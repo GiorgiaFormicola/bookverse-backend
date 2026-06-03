@@ -9,8 +9,10 @@ import java.util.UUID;
 public record UserLibraryBookDTO(
         Book info,
         UUID id,
+
         @JsonProperty("public")
         boolean isPublic,
+
         StatusType status
 ) {
 }

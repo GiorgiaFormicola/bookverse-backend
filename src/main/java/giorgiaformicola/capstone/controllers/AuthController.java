@@ -21,9 +21,6 @@ public class AuthController {
         this.usersService = usersService;
     }
 
-    //ENDPOINT REGISTRAZIONE
-    //TODO: update registration email sender
-    //TODO: verify email
     @PostMapping("register")
     @ResponseStatus(HttpStatus.CREATED)
     public User register(@RequestBody @Validated RegistrationDTO body, BindingResult validationResult) {
@@ -34,7 +31,6 @@ public class AuthController {
         return this.usersService.save(body);
     }
 
-    //ENDPOINT LOGIN
     @PostMapping("login")
     public AccessTokenDTO login(@RequestBody @Validated LoginDTO body, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
@@ -44,7 +40,6 @@ public class AuthController {
         return new AccessTokenDTO(this.usersService.checkUserCredentialsAndGenerateToken(body));
     }
 
-    //ENDPOINT RICHIESTA RIATTIVAZIONE ACCOUNT
     @PostMapping("reactivation-request")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reactivationRequest(@RequestBody @Validated SupportRequestDTO body, BindingResult validationResult) {
@@ -55,7 +50,6 @@ public class AuthController {
         this.usersService.sendReactivationRequest(body);
     }
 
-    //ENDPOINT RICHIESTA PASSWORD DIMENTICATA
     @PostMapping("forgot-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void forgotPassword(@RequestBody @Validated SupportRequestDTO body, BindingResult validationResult) {
@@ -66,7 +60,6 @@ public class AuthController {
         this.usersService.sendResetPasswordEmail(body);
     }
 
-    //ENDPOINT RICHIESTA RESET PASSWORD
     @PostMapping("reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@RequestBody @Validated ResetPasswordDTO body, BindingResult validationResult) {

@@ -12,9 +12,7 @@ public class RestClientsConfig {
     public RestClient.Builder restClientBuilder() {
         return RestClient.builder()
                 .requestInterceptor(((request, body, execution) -> {
-                    log.info("REQUEST URL: " + request.getURI());
-                    log.info("METHOD: " + request.getMethod());
-                    log.info("URI: " + request.getURI());
+                    log.debug("{} {}", request.getMethod(), request.getURI());
                     return execution.execute(request, body);
                 }));
     }

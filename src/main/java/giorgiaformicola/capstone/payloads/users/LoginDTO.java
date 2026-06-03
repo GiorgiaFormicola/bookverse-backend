@@ -6,10 +6,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record LoginDTO(
-        @NotBlank(message = "Email is mandatory")
+        @NotBlank(message = "Email is required")
         @Email(message = "Email must follow a valid email format")
         String email,
-        @NotBlank(message = "Password is mandatory")
+
+        @NotBlank(message = "Password is required")
         @Size(min = 8, message = "Password must contain at least 8 characters")
         @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$", message = "Password must follow a valid password format")
         String password

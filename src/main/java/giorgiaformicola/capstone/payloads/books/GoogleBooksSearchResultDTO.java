@@ -9,6 +9,7 @@ import java.util.List;
 public record GoogleBooksSearchResultDTO(
         @JsonProperty("totalItems")
         long totalItems,
+
         @JsonProperty("items")
         List<GoogleItemDTO> items
 ) {

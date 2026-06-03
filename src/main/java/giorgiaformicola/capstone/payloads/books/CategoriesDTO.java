@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record CategoriesDTO(
-        @NotNull(message = "Categories list is mandatory")
+        @NotNull(message = "Categories list is required")
         List<String> categories
 ) {
 }

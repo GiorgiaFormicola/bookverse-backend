@@ -108,6 +108,4 @@ public class ReviewsController {
     public Optional<Review> getMyReview(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
         return reviewsService.findByBookAndUser(currentAuthenticatedUser.getId(), googleId);
     }
-
-    ;
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 @Getter
 public class PayloadValidationException extends RuntimeException {
-    private List<String> errors;
+    private final List<String> errors;
 
     public PayloadValidationException(List<String> errors) {
         super("Some errors occurred in the validation process");

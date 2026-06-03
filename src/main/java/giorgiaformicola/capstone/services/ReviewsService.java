@@ -11,6 +11,7 @@ import giorgiaformicola.capstone.exceptions.ValidationException;
 import giorgiaformicola.capstone.payloads.books.BookDetailDTO;
 import giorgiaformicola.capstone.payloads.reviews.ReviewDTO;
 import giorgiaformicola.capstone.repositories.ReviewsRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ReviewsService {
     private final ReviewsRepository reviewsRepository;
@@ -50,21 +52,10 @@ public class ReviewsService {
         if (reviewsRepository.existsByUser_IdAndBook_GoogleId(userFound.getId(), bookToReview.getGoogleId()))
             throw new BadRequestException("The review for the book with id " + bookToReview.getGoogleId() + " made by the user " + userFound.getId() + " already exists!");
         Review reviewToSave = new Review(body.rating(), body.comment(), bookToReview, userFound);
-        return reviewsRepository.save(reviewToSave);
+        Review saved = reviewsRepository.save(reviewToSave);
+        log.info("Review saved: user={}, book={}", userId, googleId);
+        return saved;
     }
-
-/*
-    public Review save(UUID userId, String googleId, ReviewDTO body) {
-        if (googleId == null || googleId.isBlank())
-            throw new ValidationException("You must provide a valid google id");
-        User userFound = usersService.checkIfUserIsActive(userId);
-        Book bookFound = booksService.getByGoogleId(googleId);
-        if (reviewsRepository.existsByUser_IdAndBook_GoogleId(userFound.getId(), bookFound.getGoogleId()))
-            throw new BadRequestException("The review for the book with id " + bookFound.getGoogleId() + " made by the user " + userFound.getId() + " already exists!");
-        Review reviewToSave = new Review(body.rating(), body.comment(), bookFound, userFound);
-        return reviewsRepository.save(reviewToSave);
-    }
-*/
 
     public Review updateReview(UUID userId, UUID reviewId, ReviewDTO body) {
         User userFound = usersService.checkIfUserIsActive(userId);
@@ -74,7 +65,9 @@ public class ReviewsService {
         reviewFound.setRating(body.rating());
         reviewFound.setComment(body.comment());
         reviewFound.setUpdatedAt(Instant.now());
-        return reviewsRepository.save(reviewFound);
+        Review updated = reviewsRepository.save(reviewFound);
+        log.info("Review updated: reviewId={}, user={}", reviewId, userId);
+        return updated;
     }
 
     public void deleteReview(UUID userId, UUID reviewId) {
@@ -86,6 +79,7 @@ public class ReviewsService {
                 throw new UnauthorizedException("You can't delete a review made by another user");
             reviewsRepository.delete(reviewFound);
         }
+        log.info("Review deleted: reviewId={}, user={}", reviewId, userId);
     }
 
     public Page<Review> findAll(Specification<Review> specification, int page, int size, String sortBy, String order) {

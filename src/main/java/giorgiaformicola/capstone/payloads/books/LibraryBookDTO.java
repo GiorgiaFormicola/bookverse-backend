@@ -6,8 +6,10 @@ import giorgiaformicola.capstone.enums.StatusType;
 
 public record LibraryBookDTO(
         String googleId,
+
         @JsonProperty("public")
         boolean isPublic,
+
         StatusType status
 ) {
 }

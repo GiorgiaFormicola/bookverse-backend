@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Table(name = "books")
 @Getter
 @Setter
+@ToString
 public class Book {
     @Id
     @GeneratedValue
@@ -22,8 +24,7 @@ public class Book {
     @Column(name = "google_id", nullable = false, unique = true)
     private String googleId;
 
-    /*@Column(columnDefinition = "text", nullable = false)*/
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "text", nullable = false)
     private String title;
 
     @Column(name = "author", nullable = false)
@@ -34,14 +35,11 @@ public class Book {
     @ElementCollection
     private List<String> authors;
 
-    /*@Column(nullable = false)*/
     private String publisher;
 
-    /*@Column(name = "published_date", nullable = false)*/
     @Column(name = "published_date")
     private String publishedDate;
 
-    /*@Column(columnDefinition = "text", nullable = false)*/
     @Column(columnDefinition = "text")
     private String description;
 
@@ -51,7 +49,6 @@ public class Book {
     @Column(name = "isbn_13", unique = true)
     private String isbn13;
 
-    /*@Column(nullable = false)*/
     private Long pages;
 
     @Column(name = "category", nullable = false)
@@ -62,7 +59,6 @@ public class Book {
     @ElementCollection
     private List<String> categories;
 
-    /*@Column(name = "cover_url", columnDefinition = "text", nullable = false)*/
     @Column(name = "cover_url", columnDefinition = "text")
     private String coverURL;
 

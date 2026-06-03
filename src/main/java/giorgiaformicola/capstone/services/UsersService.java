@@ -61,7 +61,7 @@ public class UsersService {
             throw new BadRequestException("Email " + body.email().toLowerCase() + " already in use!");
         User newUser = new User(body.username().toLowerCase(), body.email().toLowerCase(), this.bCryptEncoder.encode(body.password()), body.displayName(), body.birthdate());
         User savedUser = this.usersRepository.save(newUser);
-        log.info("New user with id" + savedUser.getId() + "successfully registered!");
+        log.info("New user registered: {}", savedUser.getId());
         emailSender.sendRegistrationEmail(savedUser);
         return savedUser;
     }
@@ -73,7 +73,6 @@ public class UsersService {
     public User checkIfUserIsActive(UUID userId) {
         User found = findById(userId);
         if (!found.isActive())
-            /*throw new UnauthorizedException("Your account has been deactivated. Send us an email to check what happened.");*/
             throw new AccountDisabledException("Your account has been deactivated. Send us an email to check what happened.");
         return found;
     }
@@ -133,7 +132,8 @@ public class UsersService {
             found.setProfilePictureURL((String) result.get("secure_url"));
             return this.usersRepository.save(found);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            log.error("Failed to upload profile picture for user: {}", userId, ex);
+            throw new BadRequestException("Failed to upload the profile picture, try again.");
         }
     }
 
@@ -145,7 +145,9 @@ public class UsersService {
             found.setEmail(body.email().toLowerCase());
             emailSender.sendEmailAfterEmailUpdate(found);
         }
-        return this.usersRepository.save(found);
+        User saved = this.usersRepository.save(found);
+        log.info("Email updated for user: {}", userId);
+        return saved;
     }
 
     public User findByIdAndUpdatePassword(UUID userId, PasswordUpdateDTO body) {
@@ -155,7 +157,9 @@ public class UsersService {
         if (bCryptEncoder.matches(body.newPassword(), found.getPassword()))
             throw new BadRequestException("New password must be different from the current one");
         found.setPassword(this.bCryptEncoder.encode(body.newPassword()));
-        return this.usersRepository.save(found);
+        User saved = this.usersRepository.save(found);
+        log.info("Password updated for user: {}", userId);
+        return saved;
     }
 
     public User findByIdAndUpdateRole(UUID adminId, UUID userId, UserRoleDTO body) {
@@ -164,7 +168,9 @@ public class UsersService {
         if (found.getRole().name().equals(body.role()))
             throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
         found.setRole(RoleType.valueOf(body.role()));
-        return this.usersRepository.save(found);
+        User saved = this.usersRepository.save(found);
+        log.info("Role updated: user={}, role={}", userId, body.role());
+        return saved;
     }
 
     public User findByIdAndUpdateStatus(UUID adminId, UUID userId, UserStatusDTO body) {
@@ -175,7 +181,9 @@ public class UsersService {
         if (body.isActive().equals(found.isActive()))
             throw new BadRequestException("The status of the user with id " + userId + " is already set to " + (found.isActive() ? "'active'" : "'inactive'"));
         found.setActive(body.isActive());
-        return this.usersRepository.save(found);
+        User saved = this.usersRepository.save(found);
+        log.info("Status updated: user={}, active={}", userId, body.isActive());
+        return saved;
     }
 
     @Transactional
@@ -184,22 +192,19 @@ public class UsersService {
         this.userBooksRepository.deleteByUser_Id(found.getId());
         this.reviewsRepository.deleteByUser_Id(found.getId());
         this.usersRepository.delete(found);
+        log.info("User deleted: {}", userId);
     }
 
 
     public void sendReactivationRequest(SupportRequestDTO body) {
         User user = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));
-
-        if (user.isActive()) {
-            throw new BadRequestException("The provided user account is not disabled");
-        }
+        if (user.isActive()) throw new BadRequestException("The provided user account is not disabled");
         emailSender.sendReactivationRequestToAdmin(user);
         emailSender.sendReactivationConfirmationToUser(user);
     }
 
     public void sendResetPasswordEmail(SupportRequestDTO body) {
         Optional<User> user = this.usersRepository.findByEmail(body.email());
-        /*.orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));*/
         if (user.isEmpty()) return;
         User userFound = user.get();
         PasswordResetToken resetToken = passwordResetTokensService.createToken(userFound);
@@ -209,12 +214,11 @@ public class UsersService {
     public void resetPassword(ResetPasswordDTO body) {
         PasswordResetToken resetToken = passwordResetTokensService.findById(body.tokenId());
         passwordResetTokensService.validateToken(resetToken);
-
         User user = resetToken.getUser();
         user.setPassword(bCryptEncoder.encode(body.newPassword()));
         usersRepository.save(user);
-
         passwordResetTokensService.findByIdAndDeleteToken(resetToken.getId());
+        log.info("Password reset for user: {}", user.getId());
     }
 
 

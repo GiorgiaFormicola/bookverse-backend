@@ -10,7 +10,6 @@ import java.util.List;
 
 @Component
 public class BookMapper {
-    /*private static final String defaultCover = "https://neelkanthpublishers.com/assets/bookcover_cover.png";*/
 
     private static String extractIdentifier(List<GoogleVolumeIdentifierDTO> identifiersList, String identifierType) {
         if (identifiersList == null) return null;

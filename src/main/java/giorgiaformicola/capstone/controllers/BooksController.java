@@ -27,22 +27,6 @@ public class BooksController {
         this.booksService = booksService;
     }
 
-    //ENDPOINT PER CERCARE LIBRI DA GOOGLE O DA LIBRERIA
-    /*@GetMapping("/search")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public Page<BookDetailDTO> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
-                                           @RequestParam(required = false) String title,
-                                           @RequestParam(required = false) String author,
-                                           @RequestParam(required = false) String publisher,
-                                           @RequestParam(required = false) String category,
-                                           @RequestParam(required = false) String isbn,
-                                           @RequestParam(defaultValue = "0") int page,
-                                           @RequestParam(required = false) String sortBy,
-                                           @RequestParam(defaultValue = "asc") String order) {
-        SearchFieldsDTO searchFields = new SearchFieldsDTO(title, author, publisher, category, isbn);
-        return booksService.searchBooks(currentAuthenticatedUser.getId(), searchFields, page, sortBy, order);
-    }*/
-
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public List<BookDetailDTO> searchBooks(@AuthenticationPrincipal User currentAuthenticatedUser,
@@ -57,14 +41,12 @@ public class BooksController {
         return booksService.searchBooks(currentAuthenticatedUser.getId(), searchFields, sortBy, order);
     }
 
-    //ENDPOINT PER OTTENERE DETTAGLIO LIBRO O DA DB O DA GOOGLE
     @GetMapping("/search/{googleId}")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public BookDetailDTO getBookDetailsFromGoogleOrDb(@AuthenticationPrincipal User currentAuthenticatedUser, @PathVariable String googleId) {
         return booksService.getBookDetailsByGoogleId(currentAuthenticatedUser.getId(), googleId);
     }
 
-    //ENDPOINT PER OTTENERE LISTA DEI LIBRI NEL DB COME ADMIN
     @GetMapping()
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Page<Book> getBooksFromDb(@RequestParam(required = false) String title,
@@ -112,14 +94,12 @@ public class BooksController {
         return booksService.findAll(specification, page, size, sortBy, order);
     }
 
-    //ENDPOINT PER OTTENERE LIBRO DAL DB COME ADMIN
     @GetMapping("/{googleId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book getBookByGoogleId(@PathVariable String googleId) {
         return booksService.getByGoogleId(googleId);
     }
 
-    //ENDPOINT PER AGGIORNARE LIBRO DAL DB COME ADMIN
     @PutMapping("/{googleId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book updateBookInfo(@PathVariable String googleId, @RequestBody @Validated BookInfoDTO body, BindingResult validationResult) {
@@ -130,14 +110,12 @@ public class BooksController {
         return booksService.findByIdAndUpdateBookInfo(googleId, body);
     }
 
-    //ENDPOINT PER AGGIORNARE COVER LIBRO DAL COME ADMIN
     @PatchMapping("/{googleId}/cover")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book updateBookCover(@PathVariable String googleId, @RequestParam("book_cover") MultipartFile file) {
         return booksService.findByIdAndUpdateBookCover(googleId, file);
     }
 
-    //ENDPOINT PER AGGIORNARE AUTORI LIBRO DAL COME ADMIN
     @PatchMapping("/{googleId}/authors")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book updateBookAuthors(@PathVariable String googleId, @RequestBody @Validated AuthorsDTO body, BindingResult validationResult) {
@@ -148,7 +126,6 @@ public class BooksController {
         return booksService.findByIdAndUpdateBookAuthors(googleId, body);
     }
 
-    //ENDPOINT PER AGGIORNARE CATEGORIE LIBRO DAL COME ADMIN
     @PatchMapping("/{googleId}/categories")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     public Book updateBookCategories(@PathVariable String googleId, @RequestBody @Validated CategoriesDTO body, BindingResult validationResult) {
@@ -159,7 +136,6 @@ public class BooksController {
         return booksService.findByIdAndUpdateBookCategories(googleId, body);
     }
 
-    //ENDPOINT PER AGGIUNGERE LIBRO COME ADMIN
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -171,7 +147,6 @@ public class BooksController {
         return booksService.save(body);
     }
 
-    //ENDPOINT PER ELIMINARE LIBRO DA DB COME ADMIN
     @DeleteMapping("/{googleId}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -179,25 +154,9 @@ public class BooksController {
         booksService.findByIdAndDelete(googleId);
     }
 
-    //ENDPOINT PER OTTERE STATISTICHE LIBRO
     @GetMapping("/{googleId}/stats")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public BookStatsDTO getBookStats(@PathVariable String googleId) {
         return booksService.getBookStats(googleId);
     }
-
-
-
-    /*@GetMapping("/search")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public OpenLibraryWorksSearchResponseDTO searchFromAPI(@RequestParam String query,
-                                                           @RequestParam(defaultValue = "0") int page) {
-        return booksService.searchWorksFromAPI(query, page);
-    }
-
-    @GetMapping("/search/{editionId}")
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
-    public OpenLibraryBookDetailsDTO getBookDetailsFromAPI(@PathVariable String editionId) {
-        return booksService.getBookFromAPI(editionId);
-    }*/
 }
