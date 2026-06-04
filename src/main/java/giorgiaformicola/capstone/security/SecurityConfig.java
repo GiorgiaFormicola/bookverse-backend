@@ -40,7 +40,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(@Value("${localhost.port}") String port, @Value("${server.address}") String address, @Value("${frontend.url}") String frontendURL) {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:" + port, "http://" + address + ":" + port, frontendURL));
+        configuration.setAllowedOrigins(List.of("http://localhost:" + port, "http://" + address + ":" + port, frontendURL, "https://*.vercel.app"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
 
