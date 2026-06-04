@@ -9,6 +9,8 @@ This repository contains the **backend** of the application, built with Spring B
 
 🔗 **Frontend repository:** [bookverse-frontend](https://github.com/GiorgiaFormicola/bookverse-frontend)
 
+🌐 **Live Demo:** [bv-bookverse.vercel.app](https://bv-bookverse.vercel.app)
+
 ---
 
 ## ✨ Features
@@ -106,7 +108,8 @@ The server will start at `http://localhost:<SERVER_PORT>`
 
 > ⚠️ **Mailgun sandbox mode:** In sandbox mode, emails can only be sent to verified recipients. To test email features (
 > registration, password reset, account reactivation), you must first register with an email address that has been
-> verified in your Mailgun dashboard under **Sending → Sandbox domain → Authorized Recipients**. Emails sent to unverified
+> verified in your Mailgun dashboard under **Sending → Sandbox domain → Authorized Recipients**. Emails sent to
+> unverified
 > addresses will be silently ignored.
 >
 > 📬 **Admin email:** The `MAILGUN_ADMIN_EMAIL` variable can be set to any working email address — it is used to receive
