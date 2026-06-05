@@ -61,7 +61,7 @@ public class ReviewsService {
         User userFound = usersService.checkIfUserIsActive(userId);
         Review reviewFound = findById(reviewId);
         if (!reviewFound.getUser().getId().equals(userFound.getId()))
-            throw new UnauthorizedException("You can't updated a review made by another user");
+            throw new UnauthorizedException("You can't update a review made by another user");
         reviewFound.setRating(body.rating());
         reviewFound.setComment(body.comment());
         reviewFound.setUpdatedAt(Instant.now());

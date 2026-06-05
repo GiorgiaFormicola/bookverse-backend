@@ -163,7 +163,7 @@ public class UsersService {
     }
 
     public User findByIdAndUpdateRole(UUID adminId, UUID userId, UserRoleDTO body) {
-        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update you own role");
+        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update your own role");
         User found = this.findById(userId);
         if (found.getRole().name().equals(body.role()))
             throw new BadRequestException("'" + body.role() + "' role already assigned to the user with id " + userId);
@@ -174,7 +174,7 @@ public class UsersService {
     }
 
     public User findByIdAndUpdateStatus(UUID adminId, UUID userId, UserStatusDTO body) {
-        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update you own status");
+        if (adminId.equals(userId)) throw new UnauthorizedException("You can't update your own status");
         User found = this.findById(userId);
         if (found.getRole().equals(RoleType.ADMIN))
             throw new BadRequestException("You can't change the status of an ADMIN");
@@ -197,7 +197,7 @@ public class UsersService {
 
 
     public void sendReactivationRequest(SupportRequestDTO body) {
-        User user = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new NotFoundException("User with email " + body.email() + "has not been found"));
+        User user = this.usersRepository.findByEmail(body.email()).orElseThrow(() -> new NotFoundException("User with email " + body.email() + " has not been found"));
         if (user.isActive()) throw new BadRequestException("The provided user account is not disabled");
         emailSender.sendReactivationRequestToAdmin(user);
         emailSender.sendReactivationConfirmationToUser(user);
